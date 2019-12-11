@@ -602,13 +602,17 @@ lprint(va_alist) va_dcl
 #endif
 {
 	va_list args;
+	va_list args2;
 
 #ifdef __STDC__
         va_start(args, format);
+	va_start(args2, format);
 #else
         char *format;
         va_start(args);
+	va_start(args2);
         format = va_arg(args, char *);
+	va_arg(args2, char *); // skip
 #endif
 	/* If we're printing to an sbuf, make sure there's enough room */
 	/* XXX +100? */
@@ -651,10 +655,11 @@ lprint(va_alist) va_dcl
 			else
 			   bptr1++;
 		}
-		vfprintf(lfd, bptr2, args);
+		vfprintf(lfd, bptr2, args2);
 		free(bptr2);
 	}
 	va_end(args);
+	va_end(args2);
 }
 
 void

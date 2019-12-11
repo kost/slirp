@@ -403,7 +403,7 @@ fork_exec(so, ex, do_pty)
 		  {
 			  char buff[256];
 			  
-			  sprintf(buff, "Error: execvp of %s failed: %s\n", 
+			  snprintf(buff, sizeof(buff), "Error: execvp of %s failed: %s\n", 
 				  argv[0], strerror(errno));
 			  write(2, buff, strlen(buff)+1);
 		  }
@@ -490,7 +490,7 @@ snooze_hup(num)
 		if (connect(s, (struct sockaddr *)&sock_un,
 			      sizeof(sock_un.sun_family) + sizeof(sock_un.sun_path)) != 0)
 		   slirp_exit(1);
-		sprintf(buff, "kill none:%d", slirp_socket_unit);
+		snprintf(buff, sizeof(buff), "kill none:%d", slirp_socket_unit);
 		write(s, buff, strlen(buff)+1);
 	}
 #endif
@@ -917,7 +917,7 @@ rsh_exec(so,ns, user, host, args)
            
            /* Ooops, failed, let's tell the user why */
            
-           sprintf(buff, "Error: execlp of %s failed: %s\n", 
+           snprintf(buff, sizeof(buff), "Error: execlp of %s failed: %s\n", 
                    "rsh", strerror(errno));
            write(2, buff, strlen(buff)+1);
            close(0); close(1); close(2); /* XXX */

@@ -1029,7 +1029,7 @@ cont_1:
 			sleep(1);
 			if (read(fd, buff, 256) < 0) {
 				/* Nuke both connections */
-				sprintf(buff, "0 Connection timed out");
+				snprintf(buff, sizeof(buff), "0 Connection timed out");
 				write(fd, buff, strlen(buff)+1);
 				slirp_socket_wait = curtime;
 				close(fd);
@@ -1041,7 +1041,7 @@ cont_1:
 
 		if (sscanf(buff, "%d %d %256s", &unit, &pid, device) == 3) {
 			if (unit >= MAX_INTERFACES || unit < 0) {
-				sprintf(buff, "0 Unit out of range (must be between 0 and %d, inclusive)", MAX_INTERFACES-1);
+				snprintf(buff, sizeof(buff), "0 Unit out of range (must be between 0 and %d, inclusive)", MAX_INTERFACES-1);
 				write(fd, buff, strlen(buff)+1);
 				slirp_socket_wait = curtime;
 				close(fd);
@@ -1052,7 +1052,7 @@ cont_1:
 			 * (pid is invalid) */
 			if (slirp_socket_passwd) {
 				if (strcmp(slirp_socket_passwd, device) != 0) {
-					sprintf(buff, "0 Incorrect password");
+					snprintf(buff, sizeof(buff), "0 Incorrect password");
 					write(fd, buff, strlen(buff)+1);
 					slirp_socket_wait = curtime;
 					close(fd);
@@ -1076,7 +1076,7 @@ cont_1:
 			 * failure, 1 for exit, and message is printed
 			 */
 			if (ttyp) {
-				sprintf(buff, "0 Unit already attached");
+				snprintf(buff, sizeof(buff), "0 Unit already attached");
 				write(fd, buff, strlen(buff)+1);
 				slirp_socket_wait = curtime;
 				close(fd);
@@ -1090,7 +1090,7 @@ cont_1:
 				   strcpy(buff2, "PPP");
 				else
 #endif
-				   sprintf(buff2, "SLIP, MTU %d, MRU %d", if_mtu, if_mru);
+				   snprintf(buff2, sizeof(buff2), "SLIP, MTU %d, MRU %d", if_mtu, if_mru);
 #ifndef FULL_BOLT
 				snprintf(buff, sizeof(buff),
 					"1 Attached as unit %d, device %s\r\n\r\n[talking %s, %d baud]\r\n\r\nSLiRP Ready ...",
@@ -1111,7 +1111,7 @@ cont_1:
 					ttyp->fd = fd;
 				}
 			} else {
-				sprintf(buff, "0 %s", strerror(errno));
+				snprintf(buff, sizeof(buff), "0 %s", strerror(errno));
 				write(fd, buff, strlen(buff)+1);
 				slirp_socket_wait = curtime;
 				close(fd);

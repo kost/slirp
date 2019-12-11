@@ -695,7 +695,7 @@ cfg_help(buff, inso)
 		lprint("Valid commands:\r\n");
 		while (cfg[i].command) {
 			if (count >= 2) {
-				sprintf(str, "\r\n");
+				snprintf(str, sizeof(str), "\r\n");
 				count = 0;
 			} else {
 				count++;

@@ -1,0 +1,35 @@
+This patch updates slirp-1.0.16
+(Bug fixes)
+
+It includes (modified) patches from Tim Watt, which corrects issues with
+the checking of TTYs, and compilation of the FULL_BOLT version.
+
+It also adds the "malloc heap corruption
+patch" from Juergen Keil at the QEMU project (Kindly brought to my
+attention by Gertjan Halkes)
+
+The version number is updated to 1.0.17
+
+
+References:
+
+http://sourceforge.net/mailarchive/message.php?msg_id=13646144
+http://sourceforge.net/mailarchive/message.php?msg_id=14381829
+http://lists.gnu.org/archive/html/qemu-devel/2005-05/msg00228.html
+
+Notes:
+
+Under Cygwin using gcc 3.4.4 it was found that slirp wouldn't work with
+the -O2 option enabled. This was eventually tracked down to tcp_input.c
+which has issues with strict aliasing.
+
+To work around this, I currently (manually) add a -fno-strict-aliasing
+option to the COMMON_DEFS definition in the Makefile.
+
+Regards
+Roger
+
+2006/01/08
+
+
+

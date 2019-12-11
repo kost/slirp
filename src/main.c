@@ -990,10 +990,10 @@ cont_1:
 		char *device = dev;
 #ifndef NO_UNIX_SOCKETS
 		struct sockaddr_un sock_un;
-		int sock_len = sizeof(struct sockaddr_un);
+		socklen_t sock_len = sizeof(struct sockaddr_un);
 #endif
 		struct sockaddr_in sock_in;
-		int sock_len2 = sizeof(struct sockaddr_in);
+		socklen_t sock_len2 = sizeof(struct sockaddr_in);
 
 		fd = -1;
 		if (slirp_socket_passwd)

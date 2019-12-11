@@ -598,6 +598,10 @@ findso:
  *			    ((so->so_iptos & IPTOS_LOWDELAY) && 
  *			     ((struct tcpiphdr_2 *)ti)->first_char == (char)27)) {
  */
+#ifdef FULL_BOLT
+			tp->t_flags |= TF_ACKNOW;
+			tcp_output(tp);
+#else
 			if ((unsigned)ti->ti_len == 1 &&
 			    ((struct tcpiphdr_2 *)ti)->first_char == (char)27) {
 				tp->t_flags |= TF_ACKNOW;
@@ -605,6 +609,7 @@ findso:
 			} else {
 				tp->t_flags |= TF_DELACK;
 			}
+#endif
 			return;
 		}
 	} /* header prediction */

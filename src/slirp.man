@@ -1,4 +1,4 @@
-.TH SLIRP 1 "9 Jan 1996" "Version 1.0b"
+.TH SLIRP 1 "8 Jan 2006" "Version 1.0.17"
 .\" Start displayed text macro
 .de DS
 
@@ -58,7 +58,7 @@ You can also "disconnect" Slirp by typing five 1's (one's), with a 1
 second gap between each. This will disconnect Slirp from your shell's
 terminal and put Slirp in the background. Later, you can type
 .DS
-    slirp -l 0
+    slirp \-l 0
 .DE
 to "reconnect" Slirp again.
 .PP
@@ -93,29 +93,29 @@ you can achieve the same thing by running Slirp as:
 (Notice the quotes, they ARE significant).  The reverse is also true.  E.g.,
 if you run slirp as:
 .DS
-    slirp -P -b 14400
+    slirp \-P \-b 14400
 .DE
 you can create your .slirprc file too look like the following:
 .DS
-    -P
-    -b 14400
+    \-P
+    \-b 14400
 .DE
 (Notice that only ONE command per line is allowed in configuration files).
 The 2 types of options can also be mixed. For example:
 .DS
     In .slirprc:
-        -P
-        -b 14400
+        \-P
+        \-b 14400
         redir 5022 21
 
     Command line:
-        slirp -P -b 14400 "redir 5022 21"
+        slirp \-P \-b 14400 "redir 5022 21"
 .DE
 Note that on the command line, any command/option that does not begin
 with a '-' or '+', and has spaces in it, MUST be enclosed in quotes.
 E.g., The following are all legal:
 .DS
-    slirp -P "redir udp 5022 25" -vj -b 14400
+    slirp \-P "redir udp 5022 25" \-vj \-b 14400
     slirp "ppp" "baudrate 14400"
     slirp ppp "baudrate 14400"
 .DE
@@ -125,9 +125,9 @@ does not need to be enclosed in quotes because it has no spaces in it)
 The following are NOT legal:
 .DS
     slirp baudrate 14400
-    slirp "-b 14400"
+    slirp "\-b 14400"
 .DE
-(Because "-b" starts with a '-' you must NOT enclose it in quotes.)
+(Because "\-b" starts with a '-' you must NOT enclose it in quotes.)
 Easy, eh?
 .PP
 Note: Whenever Slirp expects an IP address as an argument (E.g., in
@@ -149,8 +149,8 @@ command:
 A few notes on configuration:
 .RS 2
 .IP * 2
-You should have "ppp" or "-P" before any PPP options (because when
-Slirp parses -P or ppp, it will initialize all related fields, hence
+You should have "ppp" or "\-P" before any PPP options (because when
+Slirp parses \-P or ppp, it will initialize all related fields, hence
 clearing anything that was parsed before it).
 .IP * 2
 Upon startup, the configuration is done in this order:
@@ -164,9 +164,9 @@ Command-line options
 .RE
 .IP \  2
 This is important because, for example, if you have "initiate-options"
-(a PPP option) in ~/.slirprc-0, and you run slirp with -P,
-"initiate-options" will not be valid, because -P will clear the fact
-that you want options initiated by Slirp (remember, -P should always
+(a PPP option) in ~/.slirprc-0, and you run slirp with \-P,
+"initiate-options" will not be valid, because \-P will clear the fact
+that you want options initiated by Slirp (remember, \-P should always
 come before any PPP options).
 .RE
 .SH "COMMANDS AND OPTIONS"
@@ -202,7 +202,7 @@ Redirect a port for use with the X Window System.
 .br
 Usable: anywhere
 .br
-Command-line: -X
+Command-line: \-X
 .br
 Options:
 .RS 2
@@ -287,7 +287,7 @@ settings for the host port or modem.
 .br
 Usable: anywhere
 .br
-Command-line: -b
+Command-line: \-b
 .PP
 Example: baudrate 14400
 .PP
@@ -433,8 +433,8 @@ Note: It is recommended you use "close N" instead, as this merely
 wipes out the session, whereas "close N" closes it properly, as a good
 little tcpip-emulator should :)
 .PP	
-"kill -1" shouldn't be used, it will kill the first session it finds
-with -1, which usually is the command-line connection.
+"kill \-1" shouldn't be used, it will kill the first session it finds
+with \-1, which usually is the command-line connection.
 .RE
 .IP "close N"
 .RS 4
@@ -792,9 +792,9 @@ ASCII 0x7e which is used by PPP as the "end of packet" character").
 If your PPP software is unable to escape these characters, or you're
 using (C)SLIP (which must have an 8bit clean link), your best bet is to
 try and make the link 8bit clean.  For example, on some systems you can
-give telnet the -8 flag to make the link 8bit, and -E to stop it from
-interpreting the ^] character.  Similarly for rlogin; -8 to make the
-link 8bit, -E to stop rlogin from interpreting the ~ character.  You
+give telnet the \-8 flag to make the link 8bit, and \-E to stop it from
+interpreting the ^] character.  Similarly for rlogin; \-8 to make the
+link 8bit, \-E to stop rlogin from interpreting the ~ character.  You
 should look at the telnet and rlogin manual pages ("man telnet" and
 "man rlogin" respectively) to see if your telnet/rlogin has similar
 options. 
@@ -815,7 +815,7 @@ On startup, Slirp should print something like:
 Now, when you telnet to the host you wish to run the X programs from,
 you should do as Slirp suggest above; type either of the two commands,
 depending on which shell you are using.  You could also run the X
-program as "xprog -display IP.ADDRESS:X.Y" as printed above.
+program as "xprog \-display IP.ADDRESS:X.Y" as printed above.
 .IP     
 If you missed what Slirp displayed on startup, you can telnet to
 10.0.2.0 and give Slirp the command "show X", and the above will be
@@ -886,13 +886,13 @@ If all else fails, send me e-mail to danjo@blitzen.canberra.edu.au
 with the following information:
 .RS 2
 .IP * 2
-Output of the command "uname -a" on the remote system;
+Output of the command "uname \-a" on the remote system;
 .IP * 2
 Operating System name and version you run on your PC;
 .IP * 2
 Version of Slirp you are using (IMPORTANT!!!);
 .IP * 2
-If you managed to get Slirp running, run Slirp as "slirp -S" then try
+If you managed to get Slirp running, run Slirp as "slirp \-S" then try
 whatever failed.  When you exit Slirp, you should have a file called
 "slirp_stats".  Send me this file; and
 .IP * 2

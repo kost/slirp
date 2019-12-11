@@ -65,7 +65,7 @@ if_init()
  * This shouldn't be needed since the modem is blocking and
  * we don't expect any signals, but what the hell..
  */
-inline int
+/*inline*/ int
 writen(fd, bptr, n)
 	int fd;
 	char *bptr;

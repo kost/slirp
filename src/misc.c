@@ -105,7 +105,7 @@ struct quehead_32 {
 	u_int32_t qh_rlink;
 };
 
-inline void
+/*inline*/ void
 insque_32(a, b)
 	void *a;
 	void *b;
@@ -119,7 +119,7 @@ insque_32(a, b)
 	= (u_int32_t)element;
 }
 
-inline void
+/*inline*/ void
 remque_32(a)
 	void *a;
 {
@@ -136,7 +136,7 @@ struct quehead {
 	struct quehead *qh_rlink;
 };
 
-inline void
+/*inline*/ void
 insque(a, b)
 	void *a, *b;
 {
@@ -149,7 +149,7 @@ insque(a, b)
 	= (struct quehead *)element;
 }
 
-inline void
+/*inline*/ void
 remque(a)
      void *a;
 {

@@ -132,6 +132,6 @@ struct mbstat {
 extern struct	mbstat mbstat;
 extern int mbuf_alloced;
 extern struct mbuf m_freelist, m_usedlist;
-extern mbuf_max;
+extern int mbuf_max;
 
 #endif

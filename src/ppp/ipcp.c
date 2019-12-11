@@ -568,7 +568,7 @@ ipcp_nakci(f, p, len)
 	    no.neg_vj = 1;
 	    break;
 	case CI_ADDRS:
-	    if (go->neg_addr && go->old_addrs || no.old_addrs
+	    if ((go->neg_addr && go->old_addrs) || no.old_addrs
 		|| cilen != CILEN_ADDRS)
 		goto bad;
 	    try.neg_addr = 1;

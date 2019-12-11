@@ -464,7 +464,7 @@ ccp_reqci(f, p, lenp, dont_nak)
 
 	if (newret == CONFNAK && dont_nak)
 	    newret = CONFREJ;
-	if (!(newret == CONFACK || newret == CONFNAK && ret == CONFREJ)) {
+	if (!(newret == CONFACK || (newret == CONFNAK && ret == CONFREJ))) {
 	    /* we're returning this option */
 	    if (newret == CONFREJ && ret == CONFNAK)
 		retp = p0;

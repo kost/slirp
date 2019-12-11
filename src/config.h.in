@@ -45,6 +45,8 @@
 #define NO_PROTOTYPES
 #endif
 
+#define _GNU_SOURCE
+
 /*********************************************************/
 /*
  * Autoconf defined configuration options

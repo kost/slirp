@@ -10,6 +10,7 @@
 
 #include <sys/types.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>

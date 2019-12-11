@@ -54,4 +54,18 @@ void real_do_syslog ();
 
 void print_string _P((char *, int, void (*) _P((void *, char *, ...)), void *));
 
+int bad_ip_adrs(u_int32_t addr);
+void novm __P((char *));
+void auth_peer_fail(int unit, int protocol);
+void auth_withpeer_fail(int unit, int protocol);
+void auth_peer_success(int unit, int protocol);
+void auth_withpeer_success(int unit, int protocol);
+int auth_ip_addr(int unit, u_int32_t addr);
+void link_established(int unit);
+void link_down(int unit);
+void link_required(int unit);
+void link_terminated(int unit);
+void check_auth_options();
+void check_access(FILE *f, char *filename);
+
 #endif /* __PPP_H__ */

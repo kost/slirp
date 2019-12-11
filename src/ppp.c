@@ -40,6 +40,7 @@
 #include <syslog.h>
 #include <utmp.h>
 #include <pwd.h>
+#include <ctype.h>
 
 #include <sys/param.h>
 #include <sys/types.h>

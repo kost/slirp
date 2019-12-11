@@ -11,6 +11,8 @@
 #endif
 #include <slirp.h>
 
+void lcp_lowerdown(int unit);
+
 struct ttys *ttys_unit[MAX_INTERFACES];
 
 int slirp_forked;

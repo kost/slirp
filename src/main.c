@@ -73,7 +73,11 @@ main(argc, argv)
 	lprint_ptr2 = (char *)stderr;
 	lprint_arg = (char **)&lprint_ptr2;
 
+#ifndef FULL_BOLT
 	lprint("Slirp v%s (%s)\n\n", SLIRP_VERSION, SLIRP_STATUS);
+#else
+	lprint("Slirp v%s (%s) FULL_BOLT\n\n", SLIRP_VERSION, SLIRP_STATUS);
+#endif
 
 	lprint("Copyright (c) 1995,1996 Danny Gasparovski and others.\n");
 	lprint("All rights reserved.\n");

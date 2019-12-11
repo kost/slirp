@@ -209,3 +209,4 @@ strtoul.o: ${srcdir}/strtoul.c
 .c.o: $(COMMON_H)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+nothing:

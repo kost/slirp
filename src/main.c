@@ -237,7 +237,7 @@ main_init(argc, argv)
 
 	/* It's an internet socket */
 	if (sscanf(*argv, "%d,%[^:]:%d,%s", &unit, hn, &port, pwd) != 4) {
-	  lprint("Error: bad arguements to -l\n");
+	  lprint("Error: bad arguments to -l\n");
 	  slirp_exit(1);
 	}
 	if (strcmp(pwd, "-") == 0) {

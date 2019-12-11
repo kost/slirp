@@ -128,7 +128,7 @@ Version 1.0b RELEASE (4/1/96)
   so, or if given an argument, every S seconds.
 - When load-balancing over multiple modems, you can now specify the password
   in the environmental variable SLIRP_PASSWORD, then give Slirp the
-  arguements "-l x,host:port,-".  This is for systems where the password is
+  arguments "-l x,host:port,-".  This is for systems where the password is
   still seen in a "ps x" even though Slirp tries to hide it, like Solaris.
 - Add some performance enhancments to the load-balancing code, which
   includes the addition of the "towrite_max N" option, and updated the

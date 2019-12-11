@@ -881,7 +881,7 @@ extern struct in_addr dns_addr, dns2_addr; /* @@Hack */
 	    }
 	    GETLONG(tl,p);
 	    if (htonl(tl) != wo->dnsaddr[0]) {
-                DECPTR(sizeof (long),p);
+                DECPTR(sizeof (u_int32_t),p);
 		tl = ntohl(wo->dnsaddr[0]);
 		PUTLONG(tl, p);
 		orc = CONFNAK;
@@ -899,7 +899,7 @@ extern struct in_addr dns_addr, dns2_addr; /* @@Hack */
 	    }
 	    GETLONG(tl,p);
 	    if (htonl(tl) != wo->winsaddr[0]) {
-                DECPTR(sizeof (long),p);
+                DECPTR(sizeof (u_int32_t),p);
 		tl = ntohl(wo->winsaddr[0]);
 		PUTLONG(tl, p);
 		orc = CONFNAK;
@@ -917,7 +917,7 @@ extern struct in_addr dns_addr, dns2_addr; /* @@Hack */
 	    }
 	    GETLONG(tl,p);
 	    if (htonl(tl) != wo->dnsaddr[1]) { /* and this is the 2nd one */
-                DECPTR(sizeof (long),p);
+                DECPTR(sizeof (u_int32_t),p);
 		tl = ntohl(wo->dnsaddr[1]);
 		PUTLONG(tl, p);
 		orc = CONFNAK;
@@ -935,7 +935,7 @@ extern struct in_addr dns_addr, dns2_addr; /* @@Hack */
 	    }
 	    GETLONG(tl,p);
 	    if (htonl(tl) != wo->winsaddr[1]) { /* and this is the 2nd one */
-                DECPTR(sizeof (long),p);
+                DECPTR(sizeof (u_int32_t),p);
 		tl = ntohl(wo->winsaddr[1]);
 		PUTLONG(tl, p);
 		orc = CONFNAK;

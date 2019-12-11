@@ -902,7 +902,7 @@ echo "$ac_t""$ac_cv_prog_gcc_traditional" 1>&6
 fi
 
 if test x$cross_compiling = xyes; then
-	eval $CROSS_ERROR
+	echo $CROSS_ERROR
 fi
 # Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2

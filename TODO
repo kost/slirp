@@ -1,0 +1,5 @@
+Whee!!! another TODO file!
+
+To do:
+* Clean up the code so it has some resemblance to ANSI C.
+* Replace functions which just return 1 to actually do something.

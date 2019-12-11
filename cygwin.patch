@@ -1,0 +1,21 @@
+--- /home/mike/slirp-1.0.14pre1/src/misc.c	Sat Sep  9 18:48:43 2000
+ +++ misc.c	Wed Aug 14 01:00:58 2002
+ @@ -227,10 +227,13 @@
+  		return -1;
+  	}
+  	
+ -	if ((slave = open(ptr, O_RDWR)) < 0 ||
+ -	    ioctl(slave, I_PUSH, "ptem") < 0 ||
+ -	    ioctl(slave, I_PUSH, "ldterm") < 0 ||
+ -	    ioctl(slave, I_PUSH, "ttcompat") < 0) {
+ +	if ((slave = open(ptr, O_RDWR)) < 0
+ +#ifdef I_PUSH
+ +	    || ioctl(slave, I_PUSH, "ptem") < 0
+ +	    || ioctl(slave, I_PUSH, "ldterm") < 0
+ +	    || ioctl(slave, I_PUSH, "ttcompat") < 0
+ +#endif
+ +	   ) {
+  		close(master);
+  		close(slave);
+  		return -1;
+

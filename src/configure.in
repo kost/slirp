@@ -1,0 +1,311 @@
+dnl --- Process this file with autoconf to produce a configure script.
+AC_INIT(debug.c)
+AC_CONFIG_HEADER(config.h)
+
+echo "Reminder: If you don't want PPP compiled in, run configure with the option --disable-ppp"
+
+dnl -
+dnl - First, extract the version
+dnl -
+AC_MSG_CHECKING(version)
+version=`cat ${srcdir}/version.h | sed -ne '1 s/.* \"\(.*\)\"/\1/; 1 p'`
+AC_SUBST(version)
+AC_MSG_RESULT($version)
+
+dnl -
+dnl - This error happens so often I should tell them what's going on
+dnl - Use as "eval $CROSS_ERROR"
+dnl -
+CROSS_ERROR="echo ;\
+echo Error: could not execute test program;\
+echo ;\
+echo This error occurs when either:;\
+echo 1\) You are cross-compiling, in which case don\'t.  Slirp needs to execute;\
+echo \ \ \ test programs to figure some things out\; or;\
+echo 2\) There is a problem with your compiler setup, in which case you should;\
+echo \ \ \ ask your sysadmin for help.  You might also want to send her the;\
+echo \ \ \ resulting config.log file for clues.; exit 1"
+
+dnl -
+dnl - Checks for programs.
+dnl -
+dnl AC_PROG_MAKE_SET
+AC_PROG_CC
+AC_PROG_CPP
+dnl -XXX Must fix this.  Some cc's -Wxxxx, -O2, etc.  Should check
+dnl -XXX them individually?
+dnl - Warn about not compiling with GCC.  Somehow, GCC's better at things.
+dnl - But then, that's just me. --RedWolf
+if test x$GCC = xyes; then
+	CFLAGS2="-O2 -Wall -Wno-implicit -Wmissing-prototypes"
+else
+	CFLAGS2="-O"
+	echo "WARNING:  Not using GCC to compile may be hazzardous to your health."
+	echo "          If you can get Slirp to compile and run w/o GCC, notify us so"
+	echo "          we can test for which compiler you're using.  RedWolf recommends"
+	echo "          installing GCC anyway if you don't have it."
+fi
+AC_PROG_GCC_TRADITIONAL
+dnl AC_PROG_INSTALL
+if test x$cross_compiling = xyes; then
+	eval $CROSS_ERROR
+fi
+dnl - Check for perl 5
+AC_PATH_PROG(PERL, perl, no)
+if test x$PERL = xno; then
+	MAKEPRO='touch $@'
+else
+	AC_MSG_CHECKING(whether perl is version 5 or greater)
+	AC_CACHE_VAL(sr_cv_perl5, sr_cv_perl5=check)
+	if test x$sr_cv_perl5 = xcheck; then
+		eval "$PERL -e '$] < 5.000 && exit 1'"
+		if test $? = 1; then
+			sr_cv_perl5=no
+		else
+			sr_cv_perl5=yes
+		fi
+	fi
+	if test x$sr_cv_perl5 = xyes; then
+		MAKEPRO='$(CPP) $< | $(MKPRO) > $@.bak && mv -f $@.bak $@'
+		AC_MSG_RESULT(yes)
+	else
+		MAKEPRO='touch $@'
+		AC_MSG_RESULT(no - prototypes will not be dynamically extracted)
+	fi
+fi
+AC_SUBST(MAKEPRO)
+
+AC_MSG_CHECKING(whether you are compiling on NeXT)
+AC_CACHE_VAL(sr_cv_next, sr_cv_next=check)
+if test x$sr_cv_next = xcheck; then
+AC_TRY_RUN([
+int main() {
+#ifdef NeXT
+	return 1;
+#else
+	return 0;
+#endif
+}], sr_cv_next=no,
+    sr_cv_next=yes,
+    eval $CROSS_ERROR)
+fi
+AC_MSG_RESULT($sr_cv_next)
+if test x$sr_cv_next = xyes; then
+	DASH_POSIX="-posix"
+	AC_SUBST(DASH_POSIX)
+	LDFLAGS="-posix $LDFLAGS"
+fi
+
+dnl -
+dnl - Some systems have a sprintf which returns char *
+dnl -
+AC_MSG_CHECKING(whether sprintf returns int)
+AC_CACHE_VAL(sr_cv_sprintf_int, sr_cv_sprintf_int=check)
+if test x$sr_cv_sprintf_int = xcheck; then
+AC_TRY_RUN([
+#include <stdio.h>
+int main () {
+char buff[1];
+int ret;
+ret = (int)sprintf(buff,"");
+if (ret == 0)
+	exit(1);
+else
+	exit(0);
+}], sr_cv_sprintf_int=no,
+    sr_cv_sprintf_int=yes,
+    eval $CROSS_ERROR)
+fi
+if test x$sr_cv_sprintf_int = xno; then
+	AC_DEFINE(BAD_SPRINTF)
+fi
+AC_MSG_RESULT($sr_cv_sprintf_int)
+
+dnl -
+dnl - Some systems need sprintf/fprintf declared, others complain
+dnl - when you do *sigh*
+dnl -
+AC_MSG_CHECKING(whether sprintf/fprintf need to be declared)
+AC_CACHE_VAL(sr_cv_sprintf_declare, sr_cv_sprintf_declare=check)
+if test x$sr_cv_sprintf_declare = xcheck; then
+AC_TRY_RUN([#include <stdio.h>
+int main () {
+	int (*tmp1)();
+	int (*tmp2)();
+	
+	tmp1 = (int (*)())fprintf;
+	tmp2 = (int (*)())sprintf;
+	
+	exit(0);
+}], sr_cv_sprintf_declare=no,
+    sr_cv_sprintf_declare=yes,
+    eval $CROSS_ERROR)
+fi
+if test x$sr_cv_sprintf_declare = xyes; then
+	AC_DEFINE(DECLARE_SPRINTF)
+fi
+AC_MSG_RESULT($sr_cv_sprintf_declare)
+
+dnl -
+dnl - Check whether gettimeofday takes two arguments
+dnl -
+AC_MSG_CHECKING(whether gettimeofday takes two arguments)
+AC_CACHE_VAL(sr_cv_gettimeofday, sr_cv_gettimeofday=check)
+if test x$sr_cv_gettimeofday = xcheck; then
+AC_TRY_COMPILE([#include <sys/time.h>], [gettimeofday((void *)0, (void *)0);],
+	sr_cv_gettimeofday=yes,
+	sr_cv_gettimeofday=no)
+fi
+if test x$sr_cv_gettimeofday = xno; then
+	AC_DEFINE(GETTIMEOFDAY_ONE_ARG)
+fi
+AC_MSG_RESULT($sr_cv_gettimeofday)
+
+dnl -
+dnl - Check memcmp
+dnl -
+AC_FUNC_MEMCMP
+
+dnl -
+dnl - Check for libraries
+dnl -
+AC_CHECK_LIB(nsl, main)
+AC_CHECK_LIB(socket, main)
+AC_CHECK_LIB(posix, main)
+AC_CHECK_LIB(crypt, main)
+
+dnl -
+dnl - Check for unix domain sockets
+dnl -
+AC_MSG_CHECKING(for unix-domain sockets)
+AC_CACHE_VAL(sr_cv_unix_sockets, sr_cv_unix_sockets=check)
+if test x$sr_cv_unix_sockets = xcheck; then
+AC_TRY_RUN([
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <sys/socket.h>
+int main () {
+	if (socket(AF_UNIX, SOCK_STREAM, 0) < 0)
+		exit(1);
+	else
+		exit(0);
+}], sr_cv_unix_sockets=yes,
+    sr_cv_unix_sockets=no,
+    eval $CROSS_ERROR)
+fi
+if test x$sr_cv_unix_sockets = xno; then
+	AC_DEFINE(NO_UNIX_SOCKETS)
+fi
+AC_MSG_RESULT($sr_cv_unix_sockets)
+
+dnl -
+dnl - Check for header files
+dnl -
+AC_HEADER_TIME
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS([sys/ioctl.h unistd.h stdlib.h sys/filio.h sys/select.h string.h sys/signal.h sys/bitypes.h termios.h sys/stropts.h sys/types32.h])
+AC_C_BIGENDIAN
+
+dnl -
+dnl - Check for typedefs, structures, and compiler characteristics
+dnl -
+AC_C_CONST
+AC_C_INLINE
+AC_MSG_CHECKING(whether u_int32_t etc. need to be typedef'd)
+if test x$ac_cv_header_sys_bitypes_h = xyes; then
+	INC_BITYPES='#include <sys/bitypes.h>'
+fi
+AC_CACHE_VAL(sr_cv_need_typedefs, sr_cv_need_typedefs=check)
+if test x$sr_cv_need_typedefs = xcheck; then
+AC_TRY_COMPILE([#include <sys/types.h>
+$INC_BITYPES
+#include <arpa/inet.h>], [u_int32_t foo = 0;],
+   sr_cv_need_typedefs=no,
+   sr_cv_need_typedefs=yes)
+fi
+AC_MSG_RESULT($sr_cv_need_typedefs)
+if test x$sr_cv_need_typedefs = xyes; then
+	AC_DEFINE(NEED_TYPEDEFS)
+	AC_CHECK_SIZEOF(char)
+	if test x$ac_cv_sizeof_char != x1; then
+		echo "Error: something is wrong with configure!"
+		echo "sizeof(char) is '$ac_cv_sizeof_char', not 1!"
+	exit 1
+	fi
+	AC_CHECK_SIZEOF(short)
+	AC_CHECK_SIZEOF(int)
+fi
+AC_CHECK_SIZEOF(char *)
+
+dnl -
+dnl - Check for library functions
+dnl -
+dnl XXX AC_FUNC_VPRINTF
+AC_CHECK_FUNCS(strdup strerror random srandom index bcmp drand48 memmove setenv inet_aton revoke grantpt fchmod)
+AC_REPLACE_FUNCS(strtoul)
+AC_CHECK_FUNC(readv, AC_DEFINE(HAVE_READV),
+  AC_MSG_CHECKING(whether iovec needs to be declared)
+  AC_CACHE_VAL(sr_cv_declare_iovec, sr_cv_declare_iovec=check)
+  if test x$sr_cv_declare_iovec = xcheck; then
+    AC_TRY_RUN([#include <sys/uio.h>
+      struct iovec { int blah; }
+      int main (void) {
+          exit(0);
+      }], sr_cv_declare_iovec=yes,
+          sr_cv_declare_iovec=no,
+	  eval $CROSS_ERROR)
+  fi
+  if test x$sr_cv_declare_iovec = xyes; then
+      AC_DEFINE(DECLARE_IOVEC)
+  fi
+  AC_MSG_RESULT($sr_cv_declare_iovec)
+)
+
+AC_MSG_CHECKING(for gethostid)
+AC_CACHE_VAL(sr_cv_gethostid, sr_cv_gethostid=check)
+if test x$sr_cv_gethostid = xcheck; then
+AC_TRY_RUN([
+int main() {
+	gethostid();
+	return 0;
+}], sr_cv_gethostid=yes,
+    sr_cv_gethostid=no,
+    eval $CROSS_ERROR)
+fi
+AC_MSG_RESULT($sr_cv_gethostid)
+if test x$sr_cv_gethostid = xyes; then
+	AC_DEFINE(HAVE_GETHOSTID)
+fi
+
+AC_ARG_ENABLE(ppp, --disable-ppp       don't compile in ppp, [], [
+	PPPOBJ='$(PPPOBJS)'
+	USE_PPP=-DUSE_PPP
+	AC_DEFINE(DUMMY_PPP)])
+AC_SUBST(PPPOBJ)
+AC_SUBST(USE_PPP)
+
+dnl -XXXXX will be fixed in a better way
+dnl Quick hack for alpha
+UNAME_MACHINE=`uname -m 2>/dev/null`
+UNAME_SYSTEM=`uname -s 2>/dev/null`
+case "${UNAME_MACHINE}:${UNAME_SYSTEM}" in
+  alpha:OSF1)	
+	if test x$GCC = xyes; then
+		LDFLAGS="$LDFLAGS -T 0x12000000 -Wl,-D -Wl,0x14000000"
+	else
+		LDFLAGS="$LDFLAGS -T 0x12000000 -D 0x14000000"
+	fi ;;
+  *)		;;
+esac
+
+
+dnl -
+dnl - Do substitutions
+dnl - In compiling PPP code, we don't want full warnings
+dnl -
+AC_SUBST(CFLAGS2)
+PPPCFLAGS="`echo $CFLAGS $CFLAGS2 | sed -e 's/-W.*//g;'`"
+AC_SUBST(PPPCFLAGS)
+
+AC_OUTPUT(Makefile)

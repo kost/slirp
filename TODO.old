@@ -1,0 +1,73 @@
+Long(er) term:
+
+Add Predictor-1 compression
+
+"r"-commands
+
+
+
+Short term (BETA):
+
+fix memmove... fix the NEED for memmove
+
+give args to exec
+
+make "exec" accept arguments
+
+Update man page
+
+Have all pending packets purged when a REXMIT is needed on a session?
+
+Move comp_s to struct ttys? [not needed, since compression won't work on >1
+ttys]
+
+Have the last used ttyp at the head of the list? [cache?]
+
+if the mtu changes, call msize_init()?
+
+"add exec" for UDP
+
+slirp.resolvd - emulate DNS packets
+
+make debugging work BEFORE option parsing?
+
+have m->m_data += if_maxlinkhdr in m_get()?
+
+remove schedtime from pppdfcns.c
+
+Change sosendto -> udp_sendto and soread -> tcp_read etc.
+and do general cleaning up
+
+warn for ports above 65535.
+
+add "baudrate 0" [make FULL_BOLT == baudrate 0 ?]
+
+have stats socket print udp[REDIRECT]
+remove OOBINLINE
+
+check all setsockopt/ioctl for opt=1
+
+remove \n from ~/.slirprc
+
+FIX FULL_BOLT
+
+Fix sbreserve... there are STILL smaller packets being sent!
+
+put "escape xx" in CFG_TELNET?
+
+add identd emulation [half done]
+
+
+make "towrite" an option
+
+only update towrite when all modems are towrite < 0 ?
+
+put ftp sites in documentation
+
+if uid=0, bind priveladged port when source port is < 1024
+
+add "add emu" crap to docs
+
+asyncmap ffffffff
+escape 0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f
+escape 10,11,12,13,14,15,16,17,18,19,1a,1b,1c,1d,1e,1f

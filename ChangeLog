@@ -1,0 +1,594 @@
+Version 1.0.16 RELEASE Sept 7, 2004 (RWP)
+From 1.0.14pre1
+- Changes for operation under Cygwin
+- Added patch for Cygwin I_PUSH by Michael Wetherell
+- dns is now transferred to peer, (If compiled with -DUSE_MS_DNS)
+  (Ripped off from hacked pppd version 2.2.0f)
+- Two dns options can be specified on command line, (Only the first
+  is used internally, but both will get transferred to peer)
+- Has a hack for connecting to a MS direct cable connect (If compiled
+  with -DMS_DCC) Only works when PPP (-P option) is chosen, but gives
+  effectively a nat'ed direct cable connect. (A chat script option would
+  be nicer)
+- Fix to exit code that incorrectly iterated list of tty's attached
+- Fixes to terminal restore code, No longer closes stdin on exit
+- If stdout, or stderr are redirected, it wont close them
+  (so you can debug using fprintf(stderr...)
+- No longer removes 0's, 1's from incoming data stream
+- New Option nozeros to not look at strings of 0's, 1's to cause
+  exit/suspend (See docs/CONFIG)
+- Can specify alternate tty on command line using "tty ttydevice"
+  (Overrides SLIRP_TTY environment variable) (see docs/CONFIG)
+- Debug builds log raw incoming data, and ppp checksum fault packets
+- Minor documentation updates
+- Does not close all file handles, (Pain when trying to debug)
+- Can manually turn on early debugging in main()
+- Most of Tims security fixes in place, (It is still insecure...)
+  Probably snprintf will make slirp less portable.
+  (Sorry Tim, I don't like strncpy, so replaced them with a strncpy2)
+
+Version 1.0.13 RELEASE Sept 30, 2000 <Kelly>
+- Added a patch posted on SourceForge to use any arbitrary tty as a port
+  instead of the console.
+- Fixed above patch to restore normal functionality by making the tty
+  /dev/tty
+- Fixed the above fix by saving and restoring the tty state.
+
+* Anyone know about Secure sockets?
+
+Version 1.0.12 RELEASE August 30, 2000 <Kelly>
+- Fixed my patch to sync with Debian's version of Slirp.
+- Promised again not to "pull a Linus" -- aka releasing it and not
+  testing it to make sure it was good. :P
+- Added ShengHuo ZHU's patches.  RSH emulation added.  Solaris 2.x 
+  should work in compiling.
+
+Version 1.0.11 RELEASE August 20, 2000 <Kelly>
+- Added a patch to sync with Debian's version of Slirp.
+- Fixed a typo with README.NEXT
+
+Version 1.0.10 RELASE May 27, 2000 <Kelly>
+- Moved the whole mess to SourceForge.  The URL is slirp.sourceforge.net now.
+  Updated docs.
+
+Version 1.0.9 RELEASE Feb 22, 2000 <Kelly>
+- Added some #ifdefs to fix bad compilation on Solaris i86 boxes.
+  May also fix a few things with others.  We'll find out soon.
+- Rearranged documentation
+- Added some warnings to the configure.in script about not using GCC for
+  compiling anything.  Seriously, folks, why don't you have GCC on your
+  system?  I've compiled it myself, and it's too eazy not to mess up.
+- Version numbering changed to be more Linux Kernelish.
+
+Version 1.0.8 (aka 1.0h) RELEASE (22/10/1999) <Kelly>
+- Switched from commenting out to the much saner #ifdefs. 
+- Edited some of the documentation to point to new maintainer (me)
+
+Version 1.0g-dk1 BETA (18/10/99)
+- Merged in logwtmp, tcp connection closing fixes from "Slirp 1.0c-KK".
+  Slirp compiles once again on Linux boxen.
+
+Version 1.0g RELEASE (13/08/99)
+- Cleanup of the ICMP code.  No ICMP packets are generated on receipt of an
+  ICMP packet with an error, except if the type is {0,8,[13-18]}.  See RFC 1122.
+- Local host  ping -f  crash solved.
+
+Version 1.0f RELEASE (19/01/99)
+- UDP sorecvfrom(so) code: the timeout for domain name lookup (port 53)
+  is not reset if recvfrom() returns an error.  Zero size UDP packets are
+  forwarded.
+
+Version 1.0e RELEASE (05/12/98)
+- Corrected a bug in the udp sorecvfrom(so) code.  UDP packets were sent with 
+  udp_output() to the client even if the packet was received with an 
+  error.  ICMP packets are generated in this case.
+- Debugged the EMU_CMD handling in tcp_input().  A telnet to the config
+  port, default 10.0.2.0, could not be closed from the client side (only
+  by typing quit at the prompt).  The connection remained open and 
+  re-telnetting gave the message "Already connected".  The tcp finite state 
+  machine went into the CLOSE WAIT state and waited forever for the 
+  non-existing remote socket to close. 
+  Solution : If a FIN is received and the socket is EMU_CTL, then the fsm goes 
+  directly to the LAST ACK state and sends an ACK + FIN (one packet).
+
+Version 1.0d RELEASE (19/8/98)
+- Fixed core dumping while reassembling ip packets
+  found a bug in      ip.h, ipasfrag.ipf_mff
+  found an error in   mbuf.c, dtom()
+- Added limited ICMP support.  ICMP packets are generated when
+  a bad IP packet is received (full support)
+  an ICMP packet can not be imitated as a UDP packet sent to port 7
+  a UDP packet can not be sent, "Network is unreachable"
+  a UDP packet is received with an error, usually "Port unreachable"
+  a TCP connection can not be made, "Network is unreachable"
+  <vdb128@tele.kotnet.org>
+
+Version 1.0c RELEASE (15/1/96)
+
+- Fixed a problem with chmod()ing Slirp's tty.
+- Fixed a problem with --disable-ppp.
+- Added the ability to have ranges in the "escape" command.  So, for
+  example, now you can use the command "escape 0-1f,ff" instead of
+  "escape 0,1,2,3,...,1f,ff".
+- Added patches for HPUX for slirp.ftpd thanks to Jeff Thieleke
+  <thieleke@icaen.uiowa.edu>.  It's in slirp.ftpd-b.tar.gz in the "extra"
+  directory at the usual Slirp ftp sites.
+- Added an updates man page, thanks to George Ferguson
+  <ferguson@cs.rochester.edu>.  It's in src/slirp.man.
+
+Version 1.0b RELEASE (4/1/96)
+
+- Fixed a few minor problems with compilation on some hosts.
+- Added a few more FAQs to the documentation (slirp.doc).
+- Fixed for systems without FIONBIO.
+- Fixed a small bug in add emu, thanks to gentile@netcom.com.
+- Changed the default baudrate to 115200.
+- Added the option "keepalive" and "keepalive S" which enables TCP
+  keep-alives.  This makes Slirp probe each TCP connection every minute or
+  so, or if given an argument, every S seconds.
+- When load-balancing over multiple modems, you can now specify the password
+  in the environmental variable SLIRP_PASSWORD, then give Slirp the
+  arguements "-l x,host:port,-".  This is for systems where the password is
+  still seen in a "ps x" even though Slirp tries to hide it, like Solaris.
+- Add some performance enhancments to the load-balancing code, which
+  includes the addition of the "towrite_max N" option, and updated the
+  documentation accordingly.
+- Fixed for systems without fchmod().
+- Added the option "ppp_exit" which will force Slirp to exit when PPP goes
+  down.  This way, if you type "exec slirp" from your shell prompt, when you
+  kill your PPP software you will be logged out.
+
+Version 1.0a RELEASE (25/12/95)
+
+- Finally released version 1.0.  Yipee!  Please read the section "Thanks" in
+  the file slirp.doc for a list of people I want to thank.
+- Revamped the documentation.  All the README.* files have been removed and
+  put into slirp.doc, with many other additions.  Please read it.
+- Turned on Talk emulation by default.  What the heck, why not?
+- Added IDENT emulation.  Now incoming connections can be properly
+  identified if your software uses the IDENT protocol.  Thanks to TheGit for
+  his help with this.  Note: this is not complete yet.  You can send
+  queries, but the reply, while correct, won't be the right format for most
+  programs.
+- Added emulation for RealAudio 2.0 thanks to Juha Pirkola.
+- Added the ability to load-balance over multiple hosts/accounts.
+- Fixed detection of SIGHUP on a unit other than 0.
+- Fixed a bug in fork_exec, thanks to Theodore Hope
+  <hope@ChanChan.pnic.pnud.org.pe>.
+- Lots of other minor fixes.
+
+Version 0.95j BETA (19/11/95)
+
+- Fixed a problem with --disable-ppp, thanks to Lynn Larrow
+  <llarrow@netcom.com>.
+- Ooops!  Forgot to uncomment a peice of code used in rlogin emulation.
+  Rlogin should work properly now.
+- Added emulation for "ping".  Pinging the remote host will work properly
+  all the time (if slirp is actually working), but pinging other hosts may
+  not work even if the host is up.  This is because slirp uses UDP to
+  "emulate" ping, not real ICMP ECHO-REQUEST packets which ping uses.
+- Lots of minor fixes thanks to Juha Pirkola.
+
+Version 0.95i BETA (16/11/95)
+
+- "Fixed" a problem with WNOHANG not being defined on OSF/1 systems,
+  although it's not really fixed, thanks to Jeff Skone
+  <jeffs@u.washington.edu>.
+- Fixed a redefinition error when net/if.h was #included, thanks to gruppo
+  progetto -cds <progetto@ds.cised.unina.it>.
+- Fixed compilation on NeXT systems, thanks to Tomas Hurka
+  <tom@hukatronic.cz>.
+- Made chap and upap files ~/.chap-secrets and ~/.pap-secrets respectivaly.
+- Fixed a problem with sending a window of 0 on a SYN-ACK packet, which
+  would cause problems with some TCP/IP stacks with certain programs (eg:
+  Trumpet Winsock and mIRC)  Thanks to Bjorn Eng <Bjorn.T.Eng@jpl.nasa.gov>
+  for helping me find this problem.
+- Updated to ppp-2.2-RELEASE PPP code.
+- Added preliminary patches for better load-balancing support when the
+  modems are not connected at the same speed.  These will be finished when I
+  am able to get access to a second modem/ph. line.  #define FULL_BOLT in
+  config.h if you wish to test it.
+- Added support for rlogin. (rsh and rexec may come soon)
+- Hopefully fixed the small-packet-syndrome once and for all!
+- Lots of other minor fixes.
+
+I hope this will be the last release before version 1.0.
+
+Version 0.95h BETA (10/9/95)
+
+- Fixed a rather nasty memory leak when BSD-compression was used.  Thanks to
+  Valtteri Vuorikoski <vuori@sci.fi> for pointing it out, and Blake "Wacko"
+  Wright for helping me fix it (again).
+- Fixed another rather nasty bug where urgent data could kill the
+  connection.  Thanks to Blake "spam me!" Wright for helping me fix it.
+- Fixed a third rather nasty bug which would corrupt uploads in certain
+  situations (usually uploading large files).  Thanks again to Blake "woody"
+  Wright for helping find the problem.
+- Fixed the "password" option when placed in the ~/.slirprc file.
+- Fixed ./configure to recognise Unix sockets, thanks to Chris Metcalf.
+- Maybe fixed a PPP problem, thanks to Steve Kneizys
+  <stevo@acad.ursinus.edu>.
+
+Version 0.95g ***BETA*** (26/8/95)
+
+- Fixed the baudrate bug in 0.95f.
+- Added a few more Motorola fixes.
+
+PLEASE NOTE: This is still *BETA* software.  If you don't *need* to upgrade,
+*don't*!  It *will* fail.  Infact, I guarantee there are bugs in 0.95g.  I
+know, I put them there! :)  If you rely on slirp for your Internet
+connectivitiy, *wait* for a stable version.  The most stable version so far
+is 0.9p (but it does lack a lot of features in the 0.95x releases).
+
+Version 0.95f BETA (24/8/95)
+
+- Fixed ./configure wrt unix-domain sockets.
+- Fixed DCC CHAT wrt mIRC (and possibly others) (thanks to Shawn Hecker
+  <heckers@freenet2.scri.fsu.edu> for finding this problem).
+- "add emu" will now mark allready-connected sockets to be emulated.
+- Added a password to telnet 10.0.2.0.  See the "password" option to set the
+  password. (before entering any commands, you must enter "pass PASSWORD").
+- Hopefully fixed OOB data ("Urgent data").
+- Fixed a bug in if_input (thanks to Robert Smathers <roberts@nmia.com> for
+  helping find the problem).
+- Fixed a bug in main_loop() which should fix the problem with SCO's.
+  (thanks to  "Jamie C. Hellstrom" <silkmare@baste.magibox.net> for helping
+  find this problem)
+- Fixed an error with the baudrate calculation.  Telnet should be more
+  responsive now. (Thanks to Antti Toivonen <atoivone@snakemail.hut.fi> for
+  pointing this out).
+- Cleaned up a few things so it'll compile on more systems.
+- Fixed BSD compression to work with VJ compression, thanks to Juha Pirkola.
+- Made 2 fixes to get it to compile on Motorola SVR4, thanks to Mark Scott
+  <mscott@quaver.urbana.mcd.mot.com>.
+- Fixed load-balancing on SunOS.
+- A few other changes and fixes.
+
+Version 0.95e BETA (2/8/95)
+
+- Fixed compression autodetection in SLIP.
+- Put the "compress" command back in.  Please, do NOT use it unless slirp
+  does not autodetect CSLIP for you (shouldn't happen... anymore :)
+- Fixed a stupid mistake I made for talk emulation.
+- Made slirp compile on systems without unix-domain sockets.  However,
+  without unix-domain sockets, you will not be able to restart nor use
+  load-balancing.
+- Added more spellink paches from Chris Metcalf.
+
+Version 0.95d BETA (27/7/95)
+
+- Added more patches from Chris Metcalf, including OSF/1 patches.  It should
+  work on OSF/1 with gcc now.
+- Fixed a bug WRT multiple modems.  You'd only be affected if your modems
+  are not all the same speed.  This may also improve single-modem
+  performance, but I doubt it :)
+- Added talk/ytalk emulation thanks to Juha Pirkola.
+  Note: it will only work for *outgoing* requests.  Also, you need to enable
+  it by editing config.h and defining EMULATE_TALK, since a rogue user *may*
+  make slirp malloc() too much data.
+- Added emulation for RealAudio and CuSeeMe, thanks (again :) to Juha
+  Pirkola.
+- Added the client program "supload" which acts a little like "tupload" in
+  term.  Read the file README.supload in the client/supload directory for
+  instructions.
+- Fixed some configuration stuff, including mtu/mru to be recognised when
+  PPP is not compiled into slirp.
+- Fixed a bug in (surprise!) SunOS, which would not terminate slirp upon
+  loss of carrier.
+- Other stuff.
+
+Version 0.95c BETA (22/7/95)
+
+- Added patches for 64-bit systems from Chris Metcalf.
+- Made "redir" more flexible.  Now you can use a service name instead of
+  port to redirect to, and the (host's) port may be omitted, in which case a
+  0 is assumed.  For example "redir ftp" is the same as the old
+  "redir 0 21".  You can also use the service name with "add exec", eg:
+  "add exec nntpd:nntp".
+
+Version 0.95b BETA (21/7/95)
+
+- Added the command "wait" from Chris Metcalf, among other fixes
+  (including a fatal SunOS bug... surprise, surprise)
+- Added patches from Wilson Cheung for BSDI.
+- Fixed the Slirp> prompt.
+- A few other things, I forget.
+
+Version 0.95a BETA (19/7/95)
+
+- Finished the load-balancing support as started in 0.9n.  Read the file
+  README.load-balancing for instructions on how to use it.  Big thanks goes
+  to Blake Wright bmwright@xmission.com for his patience in testing the
+  code, since I only have one modem.
+  As a result of the load-balancing support, the restart code has been
+  "generalised", and changed.  Please read the file README.restart to see
+  how it has changed.
+- Revamped the header files.
+- Added the perl script mkpro, which automatically extracts prototypes from
+  C source.
+- Revamped Makefile.in, configure.in, etc.
+- Revamped the README files and documentation.  They still suck tho :)
+- Fixed a bug in slirp which would cause TCP/IP stacks with small receive
+  windows (less than 8192) to lock up.  This was only really seen in Trumpet
+  Winsock because Linux/FreeBSD/etc. usually have a default window size >=
+  8192.
+- Changed the copyright of ppp.c (with Juha's permission), so now there is
+  no more GPL'd code in the slirp package.
+- Updated portions of the TCP/IP code to FreeBSD 2.0.5.  Most of the changes
+  in 2.0.5 relate to T/TCP and hash lookup of the TCP/UDP control blocks.
+  These updates are not all that beneficial to slirp, so I won't incorporate
+  them yet.
+- Updated slirp's PPP code to use ppp-2.2b2.  This fixes some PPP bugs
+  and also adds niceties like compression, etc. provided your PPP software
+  supports it.
+  Note: the compression code does not work yet.  It has been disabled by
+  default, if you want to enable it, edit ppp/ppp-comp.h and change the
+  #define of DO_BSD_COMPRESS to 1.  Be aware that code in bsd-comp.c is
+  covered by patents in the states and other countries (not Australia), so
+  don't enable it if this bothers you.
+- Added link, tty, vj statistics.
+- Changed all the "ptr += ..." stuff to use lprint().
+- Fixed a problem with slirp not choosing an optimal send and receive buffer,
+  which would result in slirp sending different sized packets.
+- Fixed a bug in PPP which would sometimes bomb on uploads, thanks to Juha
+  Pirkola.
+- Added the ability to emulate any service on any port ("add emu").
+- Added more commands: "show X", "unit", "stats tty", "stats alltty", "stats
+  vj", "dns", "log stats", "log start", "socket", among others.
+- Added 10.0.2.3 as an alias for your DNS (both UDP and TCP).  Only use this
+  if slirp guesses the correct DNS at the start, or you give it a "dns"
+  command.
+- Made slirp chmod the tty device so that it will not receive talk/biff/etc.
+  messages which would corrupt packets.
+- Added Chris Metcalf's regular per-release patches *before* releasing it.
+  Clever, eh? :)  Also thanks to Juha Pirkola for some pre-release bugfixes.
+- Added a "quit" command and a prompt to slirp's command-line.
+- Slirp's title has changed from "a (C)SLIP/PPP emulator" to the more
+  descriptive "a TCP/IP emulator over the (C)SLIP/PPP link-level protocols".
+  So there. :)
+- "redir X" has changed.  You can now tell it which port to start looking
+  for X redirections, and tell it to redirect to a specific X server.
+- Made the DISPLAY variable be automatically set, provided you use
+  slirp.telnetd-b.tar.gz (at usual slirp sites, in the "extra" directory).
+  Note that if you don't use slirp.telnetd-b.tar.gz you will NOT get DISPLAY
+  set automatically, period.  One thing you might try is set your LOCAL
+  DISPLAY variable to the one suggested by slirp and let your telnet and the
+  remote telnetd to negotiate the proper DISPLAY to set (if they both
+  support it)
+- Added a very extensive "help" command.  When you telnet to 10.0.2.0 and
+  type "help" you get a list of commands guaranteed to be up-to-date, and
+  typing "help COMMAND" will show it's usage and a brief description.  You
+  can do this from the command-line too: -h COMMAND or "help [COMMAND]" and
+  slirp will exit after showing you the help.
+- Fixed PPP for systems without CID compression.  This will also help
+  error-prone links.
+- Added an option to ./configure, --disable-ppp, which will not compile in
+  PPP.  Use this if you only use (C)SLIP, it'll make a much smaller
+  executable.
+- Added the following to the file COPYRIGHT:
+
+If you find this software useful, please consider making a $10 (or more)
+donation to your favorite charity organisation (GreenPeace, World Vision,
+Salvation Army, etc).  If you make a donation above $20, I'll send you a
+personally signed copy of slirp (well, PGP signed :).  I, and the lucky
+charity organisation, thank you.
+
+- *Lots* of minor, and *major* changes and improvements.  If you don't
+  believe me, check the diff (it's about 700k) :)
+
+Note that there are MANY changes in this version, so only use it if you're
+prepared for horrible things that may go wrong.  You probably should stick
+to 0.9o with the 2 patches mentioned in my WWW page applied.
+
+Special thanks goes to Chris Metcalf for bashing slirp for the last week or
+so and sending lots of clean-up patches and additions to make it more
+"systems-and-compilers-I-don't-have-access-to" friendly (And for showing me
+how silly C can really be :)
+
+Version 0.9o (5/6/95)
+
+- This is just another fix-for-the-sunos release.  It's not the first, and
+  won't be the last.  Thanks to Juha Pirkola and Wilson Cheung
+  (wcheung@netcom.com) for taking the time to look into this.  Thanks guys!
+- Fixed X redirection.
+- Fixed stats in a telnet session.
+- Other (minor) misc fixes.
+
+Version 0.9n (2/6/95)
+
+- Added load-balancing support.  Now, people with 2 (or more) modems can
+  effectively double (or more) their throughput.  Load-balancing support is
+  NOT needed on your local machine, but it must be able to handle more than
+  one SLIP/PPP interface (you cannot use vj compression). (not working yet)
+- Completely overhauled the configuration of slirp.  It's much more flexible
+  now.  Please read the file docs/CONFIG (not written yet) for details
+  (NOTE: ~/.ppprc is not read anymore... you can "cat ~/.ppprc >>
+  ~/.slirprc" to get it working again).
+- Removed slirp.ftpd and slirp.telnetd from the main distribution.  You can
+  get them separately from the usual slirp ftp sites.
+- Fixed a stupid change I made to 0.9m which would severely slow the link
+  down when 2 or more connections were sending data, and vj compression was
+  used.  The change was actually done to make it a tiny bit faster... go
+  figure :)
+- Made some fixes to make sure packets are aligned on a 4 byte boundary,
+  which should fix some crashes on some systems (I hope).
+- Fixed the memmove problem (I hope).
+- Many minor (and major) fixes.
+
+(Many patches that were submitted to me were not included in this release
+ because this was a rushed release (largely due to stupid bugs).  They'll
+ make it in the next release, promise.  Note also that the MTU/MRU is pretty
+ messy, and has now defaulted to 1500.  It too will be fixed in the next
+ release.  For now, make sure you tell slirp both the new MTU and MRU and
+ make sure they're the same)
+
+Version 0.9m (22/5/95)
+
+- Added slirp.ftpd.  This is similar to slirp.telnetd, but for ftp; that is,
+  you can ftp 10.0.2.1 to ftp to the remote-host, there's no need to login,
+  no syslog()'s will be done, other users can't see what you're ftping when
+  they do a ps (unless you want them to), no getting refused a connection
+  because there are too many people ftp logged in via ftp already, etc.
+  (the original ftpd sources were taken from the FreeBSD-current)
+- Fixed a bug in ppp_encap which would create lots of Incorrect Version
+  Number errors, hence loss of packets, hence bad throughput.
+- Fixed a bug in sl_compress_tcp which *might* fix the
+  spontaneously-combusting connections. *crosses-fingers*
+- Added more patches from Tom May <ftom@netcom.com> for slirp.telnetd.
+- Added patches from Chris Metcalf which restarts a slirp session if the
+  connection was broken.  To restart, run slirp with "-r".  You can have
+  "-r" specified all the time so that scripts will automatically resume a
+  lost connection, if one exists.  #define DO_RESTART in config.h if you
+  want this capability.  It's really neat!  Thanks Chris! :)
+  (Note that connections which use the address 10.0.2.1 will close after
+  reconnection, since they are run under user privilege, real telnet/ftp
+  connections shouldn't be affected though)
+- Added more patches from Chris Metcalf to make PPP compile on more systems,
+  and finally get rid of the evil -DANSI.
+- Lots of minor fixes.
+
+Version 0.9l (11/5/95)
+
+- Added PPP support, thanks to Juha Pirkola <Juha.Pirkola@helsinki.fi>.  It
+  isn't "fully" integrated into slirp yet (eg: you can only give PPP options
+  on the command line), and there's a lot of fat-cutting to be done, but I
+  have tested it and it works like a charm!  Thanks Juha! :)
+  (Note that this version might not (won't) compile on all OS's, so if
+  version 0.9k worked for you, stick with it until it becomes more
+  integrated)
+- More spelling corrections and patches to patch.solaris from Chris Metcalf.
+- Reversed sunos.patch patches, and renamed the "new" sunos.patch to
+  solaris.patch.alt, as an alternative to solaris.patch.  Use whichever
+  works for you.
+- Added emulation for DCC MOVE, thanks to Daniel J. O'Connor
+  <doconnor@ist.flinders.edu.au>.
+
+Version 0.9k (07/5/95)
+
+- Added more 64bit fixes from Kai Makisara.  It should work on Alphas now.
+- Added more patches from Chris Metcalf, including spelling fixes, krshd
+  support, etc.
+- Fixed X redirection from ~/.slirprc.
+- Fixed some UDP redirection bugs, thanks to Jay Cotton
+  <jay@calc.vet.uga.edu>.
+- Hopefully fixed the zombie processes problem for good, thanks to William
+  Greathouse.
+- Fixed an MTU bug thanks to Jay Cotton <JAY@calc.vet.uga.edu>.  MTU's other
+  than the default should work now.
+- Renamed the file ALPHA!!! to ALPHA!!, since it looks like slirp might
+  finally be stabilising :)
+- Lots of other minor fixes.
+
+Version 0.9j (02/5/95)
+
+- IMPORTANT: The default special address has changed from 192.0.2.0 to
+  10.0.2.0.  Read the file 00_README.NOW for details.
+- Made some preliminary changes so it will work on 64-bit machines, thanks
+  to Kai Makisara <makisara@abies.metla.fi>.  It probably won't work
+  properly yet, but should in the next few releases.
+- Fixed a bug that may solve the Trumpet Winsock Blues (or at least one
+  verse), thanks to Juha Pirkola <Juha.Pirkola@helsinki.fi>.
+- Added patches from William Greathouse to allow the PASV command to work on
+  incoming ftp connections.
+- Fixed X redirection from ~/.slirprc.
+- Added patches from Chris Metcalf <metcalf@catfish.lcs.mit.edu> to be more
+  K&R friendly, among other things.
+- Lots of minor fixes.
+
+Version 0.9i (19/04/95)
+
+- Made ptyexec work in the command-line.
+- Made "redir X" work in command-line and ~/.slirprc.
+- Added support for PASV mode on incoming ftp connections.
+- Argh! Had port 20 (ftp-data) same priority as telnet etc.  Should get
+  better response times in telnet sessions now.
+- Cleaned up the autoconfig a bit.
+- Added better documentation of the commands in ~/.slirprc and the
+  command-line.
+- Made many changes so it compiles with no warnings when using the -Wall
+  flags (well, 2 warnings, but they don't really exist :)
+- Added more patches from William Greathouse.
+
+Changes from SLiRP 0.9g -> 0.9h (16/04/95)
+
+- Changed the exec/ptyexec commands so that an address may be specified too.
+  (but the address must be of the form 10.0.2.xxx)
+- Added strdup for the systems that don't have it.
+- Fixed X redirection.  Now you must specify your home IP address.
+- Added more stuff in TODO.  If you want to help, read this file and do one
+  of the things listed.
+- Added anti-idle mechanisms (must have at least one TCP connections active
+  to have idle-prevention!)
+- Added more ANSIfying.
+- We have Autoconf!  *ALL* compiling troubles have now been solved, period.
+  (yeah, right! :)
+- Added do_wait() to eat defunct child processes, thanks to Joe Rumsey
+  <ogre@netcom.com>
+- Lots of minor fixes/enhancements.
+
+Changes from SLiRP 0.9f -> 0.9g (07/04/95)
+
+- Fixed a strerror declaration.
+- Hopefully (FINALLY!) fixed ftp.  If anyone sends me e-mail that ftp
+  doesn't work, they'll be shot.
+- Fixed the Makefile for SCO.
+- Added README.NOW.  Please READ it... NOW! :)
+
+Changes from SLiRP 0.9e -> 0.9f (06/04/95)
+
+- Tried to fix ftp once more.
+- Fixed some more embarrassing bugs.
+
+Changes from SLiRP 0.9d -> 0.9e (05/04/95)
+
+- I think I finally fixed the non-connecting problem, but it's ugly.  Thanks 
+  to William Greathouse <wgg@netcom.com> who found it.  It still won't fix
+  the fact that a connection attempt to a port with no process will 
+  either hang or connect then disconnect.  (it works fine in Solaris, as
+  usual)
+- Made changes to tcp_timers so that Uni of Canberra users won't get 
+  spontaneous resets of a connection, though it could help others too.
+- Hopefully fixed ftp for some users.  Thanks to rossi@cs.unibo.it (Davide 
+  Rossi) for pointing this out.
+- Added patches by nlewis@is.net (Nate Lewis) to get slirp.telnetd to
+  compile on SunOS.
+- Added an extra check in main.c which shouldn't be needed (it should be
+  taken care of by so_state) but crashes some systems. *sigh*
+
+Changes from SLiRP 0.9c -> SLiRP 0.9d (04/04/95)
+
+- *groan* SunOS still refuses to connect to non-localhosts.  Changed the
+  connection-detection code again.
+- Fixed a stoopid, stoopid mistake, which I won't tell you about, it's too
+  embarrassing :)
+
+Changes from SLiRP 0.9b -> SLiRP 0.9c (03/04/95)
+
+- Changed the code to detect when a non-blocking connection failed.  Still
+  trying to find the ideal combination that will work for all OSs.
+- Ported to HPUX, bsdi.
+- Removed the PORT_ANY code.  Now, if you don't care which port you get when
+  redirecting, use port 0.
+
+Changes from SLuRP 0.9a -> SLiRP 0.9b (30/03/95)
+
+- Changed the name from SLuRP to SLiRP (slurp already exists)
+- Added telnetd to the source tree, which, if compiled, will be used so that
+  arbitrary commands can be executed by SLiRP (eg: by default, if you telnet
+  to 10.0.2.1, you'll automatically get a shell instead of a login prompt)
+- Completely removed the old way of "address encoding" to dynamically
+  configure SLiRP, now you telnet to 10.0.2.0 and you get a "command-line"
+  interface to configure SLiRP on-the-fly, as well as many other commands.
+- Added the ability to execute a program on connection to a certain
+  address/port.
+- Changed if_output and if_start to be much smarter.  It's quite clever now :)
+  No single session can hog the link, and if one interactive session gets
+  greedy, it gets "downgraded" to the same priority as bulk data.
+- Ported to SunOS, SCO, AIX.
+- Way, way too many small changes to list... (I've forgotten them anyway)
+
+[Thanks also go to the following people for patches, ports, etc.:
+
+Tom May <ftom@netcom.com> (sunos),
+jonas@cs.rochester.edu (man page), 
+Chris Moustakis <chris@tubbs.paradigm.co.za> (sco),]

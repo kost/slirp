@@ -1,0 +1,18 @@
+int show_x _P((char *, struct socket *));
+void redir_x _P((u_int32_t, int, int, int));
+void getouraddr _P((void));
+inline void slirp_insque _P((void *, void *));
+inline void slirp_remque _P((void *));
+int add_exec _P((struct ex_list **, int, char *, int, int));
+int openpty _P((int *, int *));
+int fork_exec _P((struct socket *, char *, int));
+void snooze_hup _P((int));
+void snooze _P((void));
+void relay _P((int));
+void add_emu _P((char *));
+void u_sleep _P((int));
+void fd_nonblock _P((int));
+void fd_block _P((int));
+int rsh_exec _P((struct socket *, struct socket *, char *, char *, char *));
+char * strncpy2 _P((char  *, char  *, size_t));
+char * strjoin _P((char  *, char *));

@@ -1,0 +1,338 @@
+Key:
+    all options within [] are optional
+    usable: refers to where it can be used, ie: "command-line/config-file",
+            "telnet", or "anywhere" (which means it can appear in either
+            command-line/config-file or telnet).
+    command-line: gives the command-line equivalent
+    XXX etc.
+
+
+redir X [start RDISP] [ADDR][:DISPLAY[.SCREEN]]
+    redirect a port for use with X
+
+    usable: anywhere
+    command-line: -X
+    options:
+	start RDISP	tell slirp to start looking for free ports starting
+			from N.  eg: if N = 2, slirp will try to grab port
+			6002 then 6003 etc.  this is useful for sites which
+			sometimes run their own X server and you don't want
+			to nab their port 6000, which they would naturally expect.
+    	ADDR		our home ip address, or the address where the x server is
+			(if you have a LAN at home to connect more than one machine
+			to the net) (default 10.0.2.15 when in ~/.slirprc, the
+			source IP address when in command-line)
+	DISPLAY		which display to redirect to (default :0)
+	SCREEN		which screen to redirect to (default .0)
+    Example:
+        redir X 10.0.2.15:0.0
+    Note:
+        this will print the command needed to enter into each shell from
+        where you launch your X apps
+    See also:
+    	show X
+
+show X
+    show the command that needs to be given to your shell for any X port
+    that has been redirected (in case you forget).
+
+    usable: telnet
+    command-line: NONE
+    options:
+    	NONE
+    Example:
+    	show X
+    Note:
+    	this is useful if you forget the command to give to your shell for
+    	X redirection.
+    See also:
+    	redir X, log start
+
+redir [once|time] [udp|tcp] PORT [to] [ADDRESS:]LPORT
+    redirect host port to local port using a selected protocol.
+
+    usable: anywhere
+    command-line: NONE
+    Options:
+    	once	only allow one redirection [TCP only]
+	time	allow redirection to time out [UDP only]
+	udp	redirect a UDP port
+	tcp	redirect a TCP port [default]
+        PORT    port to use on host system
+	ADDRESS address of your home machine [default 10.0.2.15]
+        LPORT   port to redirect host port to on local system
+    Example:
+        redir tcp 5021 to 21
+                allow users to ftp to your local machine using
+                your host's port 21. (ftp your.hosts.name 5021)
+    Note:
+        if this command is in your .slirprc file and no address is
+        specified, it will assume  that your local IP address is 10.0.2.15.
+        If you enter the command from the slirp control telnet IP it will
+        use the IP address you are accessing with.
+
+baudrate N
+    controls the allocation of time to communications across
+    your serial link.  Higher values generally use more of
+    the available bandwidth to your modem.  This is _only_
+    an internal control value and does _not_ change the physical
+    settings for the host port or modem.
+
+    usable: anywhere
+    command-line: -b
+    Options:
+        N	change baudrate to N
+    Example:
+        baudrate 14400
+    Note:
+        higher numbers generally allow better transfer rates
+        for ftp sessions, but interactive sessions could become less
+	responsive.  the optimum value is *JUST* when ftp sessions reach
+	maximum throughput, but this can be hard to find (especially on
+	compressing modems) so you should choose the maximum throughput
+	you would expect from your modem.
+
+special|control|host addr ADDRESS
+    set ip address aliases and others for slirp.
+
+    usable: anywhere
+    command-line: none
+    Options:
+        special address     set the network ip alias for slirp
+        control address     only allow access to slirp control
+                            address from ADDRESS.
+	host address	    tell slirp the IP address of the host it's
+	                    running on.  use this only if slirp can't
+			    properly find the host's IP address
+    Example:
+        special address 10.0.3.0
+    Note:
+        the ADDRESS for special must end in 0 (zero) and other
+        addresses are classed from this.  The default special
+        address is 10.0.2.0 giving the following defined IP's
+            10.0.2.0        slirp control telnet IP
+            10.0.2.1        slirp exec IP
+            10.0.2.2        slirp host alias
+	    10.0.2.x        add [pty]exec optional address
+
+add [pty]exec PROGRAM:[ADDRESS:]PORT
+    Set program to execute on host  when local machine attempts
+    to connect to ADDRESS at port PORT.
+
+    usable: anywhere
+    command-line: none
+    Options:
+        exec	establish binary connection to program
+	        in the style of inetd.
+        ptyexec	establish telnet connection to program
+                using telnetd helper application under a
+		pseudo-terminal
+        PROGRAM	program to exec
+	ADDRESS optional address
+	PORT	port
+    Example:
+        add ptyexec csh:55
+                A telnet connection to the slirp exec IP
+		(default 10.0.2.1) will start and connect you
+		directly to the csh program on the host.
+		(telnet 10.0.2.1 55)
+        add exec nntpd:10.0.2.3:119
+                A program that attempts to open port 119 at
+                address 10.0.2.3 will be connected to the
+                nntpd program.
+    Note:
+        the use of the ptyexec form requires the slirp.telnetd
+        helper application be available on your path.  also note that
+	ADDRESS must be of the form SPECIAL_ADDRESS.xx (10.0.2.xx by default)
+
+[no]compress
+    force startup mode for slirp to SLIP or CSLIP.  This
+    overrides the default automatic mode determination.
+    Command:
+        nocompress    start in SLIP mode
+        compress      start in CSLIP mode
+    Options:
+        NONE
+    Note:
+        the default method of operation generally performs
+        well.  You should only have to use this command if
+        you find that your host and local system are failing
+        synchronize the connection type.
+
+mtu N
+    controls the size of the IP packets sent across the serial
+    IP link.  Valid values are <= 1500.
+    Options:
+        NONE
+    Example:
+        mtu 1500
+                set the mtu to its largest allowable size.
+    Note:
+        larger values generally improve the performance of
+        graphics web browsers and ftp transfers across the
+        serial link, at the expense of interactive performance.
+        The default value of 552 seems to be a reasonable
+        compromise for connections at 14400 baud.
+
+
+shell PROGRAM
+    set program to execute on EXEC IP default telnet port (23).
+    It is the same as
+        add ptyexec PROGRAM:23
+    Options:
+        NONE
+    Note:
+        by default slirp connects /bin/sh to the exec IP telnet
+        port.
+
+help [COMMAND]
+    show a brief list of available commands, or more information on
+    the named command
+
+
+remove [pty]exec PROGRAM:[ADDRESS/]PORT
+    reverse the effect of "add [pty]exec".  see "add [pty]exec" for the
+    options etc.
+    Note:
+        you must enter the options exactly as you entered it in add [pty]exec.
+    XXX incomplete
+
+echo [on|off]
+    turn echo on or off, depending on how your client behaves.  "echo" by
+    itself will show whether echo is currently on or off.
+
+kill N
+    kill the session which has a Socket no. of N.  to find the Socket no. of a particular
+    session, use the "stats socket" commands.  see
+    "stats" below.
+    Note:
+        it is recommended you use "close N" instead, as this merely wipes
+        out the session, whereas "close N" closes it properly, as a good
+        little tcpip-emulator should :)
+
+	"kill -1" shouldn't be used, it will kill the first session it finds
+        with -1, which usually is the command-line connection.
+
+close N
+    close the session which has a Socket no. of N.  same as "kill N", but
+    closes it session gracefully.  see "kill N"
+
+
+stats [ip | socket | tcp | vj | udp | mbuf | tty | alltty | others? ]
+    show statistics on the given argument
+    Options:
+        ip	show ip statistics
+	socket  show statistics on the currently active sockets.  use this
+                to find out which sessions to close/kill as it will also
+		show the FD of the session
+	tcp     show tcp statistics (packets sent/received/etc)
+	udp     same as tcp but for udp
+	mbuf    show how many mbufs were allocated, are in use, etc.
+	        if the modem is idle, and there are more than 1 mbufs on
+		the used list, it suggests an mbuf leak
+
+[pty]exec PROGRAM
+    this will execute PROGRAM, and the current command-line session will
+    cease to exist, taken over by the PROGRAM. ie: when the program exits,
+    you will not get the command-line back, the session will (should) close.
+
+socket [PORT,PASSWORD]
+    create a Unix-domain socket and listen() for more interfaces to connect.
+    This is also needed for restarting.  Give the arguments PORT,PASSWORD if
+    you wish to use Internet-domain sockets instead of UNIX-domain sockets.
+
+log start
+    log all the startup output to the file .slirp_start.
+
+add emu SERVICE[:TYPE_OF_SERVICE] [lport:]fport
+    Tell slirp to emulate SERVICE when on port lport/fport.
+
+    service can be: ftp, ksh, irc, none
+    type_of_service can be: throughput, lowdelay
+
+    lport can be given if that service needs emulation for, say, servers.
+
+    examples:
+        if you wish to ftp to somewhere on port 8021, do:
+
+	add emu ftp 8021
+
+	if your home ftp server is on port 8021, do:
+
+	add emu ftp 8021:0
+
+	[NOTE: this does NOT mean if you redirect port 8021 for your ftp
+	daemon, it refers the the port AT HOME at which ftpd is listening to]
+
+	if you telnet somewhere on port 8000, and you wish those packets to
+	go on the fastq (ie: so they have a higher priority than, say, ftp
+	packets), do:
+
+	add emu none:lowdelay 8000
+
+	this tells slirp that any packets destined for port 8000 will not
+	have any emulation, but it will be set IPTOS_LOWDELAY.
+
+dns DNS_IP
+	Give this to slirp if you want to use 10.0.2.3 as an alias for DNS,
+    AND slirp guesses wrong for the DNS on startup.
+
+    You can give this command twice. This is only used when dns is to be
+    transferred to the peer, (PPP mode) then 2 DNS's will be sent to the
+    peer.
+
+tty DEVICE
+    eg. slirp -P "tty /dev/ttyS0"
+
+    Only available on the COMMAND LINE, causes slirp to open the specified
+    device, rather than stdin for data transfer.
+
+    This option overrides the SLIRP_TTY environment variable which is
+    also used for this purpose.
+
+    Note: This option is 'special' and is processed prior to the other
+    options. (It may be anywhere on the command line, but is ignored in
+    the config file)
+
+nozeros
+    Give this to slirp if you do not want it to check for 5 consecutive
+    0's or 1's to exit/disconnect the link.
+    May be an issue on a slow link, and fast PC, where some numeric data could conceivably
+    look like 5 individual 0's or 1's and cause slirp to exit.
+
+
+debug Level
+-d level
+    Turns on debugging, to specified level.
+    eg. "debug -1" or -d -1 turns on all debugging (Except ppp debugging)
+    Writes to file slirp_debug
+
+    Note: Some debug items may not be present if not compiled
+    with the -DDEBUG option.
+
+debugppp
+-dppp
+    Turns on ppp debugging.
+    Writes to file slirp_pppdebug
+
+    Note: Some debug items may not be present if not compiled
+    with the -DDEBUG option.
+
+
+MS_DCC
+
+    This isn't an option, its a compile time choice, and its a hack. If
+    enabled, when slirp is run and PPP is selected, while the PPP link
+    is down, SLIRP will respond to an incoming word of "CLIENT" with the
+    reply "CLIENTSERVER"
+
+    This will allow a MS windows PC to connect to slirp using direct
+    cable connect (Over the serial port at least).
+
+    It has 1 major advantage over using a normal DCC, and that is that
+    the IP address of the connecting host is masqueraded. (Which windows
+    won't do normally)
+
+
+
+

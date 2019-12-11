@@ -1,0 +1,104 @@
+#!/usr/bin/perl
+#
+# Copyright (c) 1995, Danny Gasparovski
+# 
+# Please read the file COPYRIGHT for the
+# terms and conditions of the copyright.
+# 
+# Print out prototypes from C source.
+# 
+# My first perl script! *proud* :)
+# 
+# Function declaration must be of the form:
+# type
+# func(arglist)
+# 	argdec;
+# {
+# or:
+# type func(arglist)
+# 	argdec;
+# {
+# (former preferred), argdec must be in order of arglist,
+# and you must not use "func(void)" when no arguments are
+# expected, use "func()" instead.
+# If you don't want a particular function to be prototyped,
+# put it in %ignore_funcs
+# 
+
+# Needs perl v5, v4 doesn't seem to like the STATE0: label
+# ("?:" can be removed though)
+$] < 5.000 && die("Sorry, needs version 5.000 or greater.\n");
+
+$state = 0;
+$nargs = 0;
+$nargs_guess = -1;
+$ignore = 0;
+%ignore_funcs = ('if_start', 1);
+
+WHILE:
+while(<>) {
+	
+	$lines++;
+	
+	# Ignore blank lines
+	(/^[ \t]*$/) && next WHILE;
+	
+	# C comments and pre-processor directives are already removed
+	
+	if (/^{$/) {
+		# Done, @line may hold the full prototype
+		if ($nargs_guess == $nargs) {
+			print @line[0..$state-1];
+			print "void" if ($state == 2);
+			print "));\n";
+		}
+		$nargs_guess = -1;
+		$state = 0;
+	} elsif ($state == 0) {
+		# State 0: Try and get the function type
+STATE0:
+		if (/([a-zA-Z0-9_\* \t]+)/) {
+			$line[0] = "$1 ";
+		} else {
+			# Maybe function type is on the same line as function
+			$line[0] = "";
+		}
+		$nargs_guess = -1;
+		$state = 1;
+	} elsif ($state == 1) {
+		# State 1: We think we have the function type,
+		# try and find a function
+		/^(.*)\((.*)\)[ \t]*$/ || goto STATE0;
+		if ($ignore_funcs{$1}) {
+			goto STATE0;
+		}
+		$line[1] = "$1 _P((";
+		$nargs_guess = split(/,/, $2);
+		
+		$nargs = 0;
+		$state = 2;
+	} else {
+		# State >= 2: We think we have both function type and the
+		# actual function, try and find the argument types
+		# From here on we use $state as an index into @line
+		$line[$state++] = ", " if ($state != 2);
+		
+		/^[ \t]*([^,;]+)[ \t]+[^,; \t]+[,;](?:[ \t]*$|.*;)/ || goto STATE0;
+		$1 =~ /([^\*]+)/;	# Remove "*"
+		$type = $1;
+		
+		$n = split(/,/);
+		$nargs += $n;
+		goto STATE0 if ($nargs > $nargs_guess);
+		
+		# Extract multiple args of the form:
+		# int *arg1, arg2, *arg3;
+		$i = 0;
+		while($n--) {
+			$line[$state++] = "$type";
+			$line[$state++] = " $1"	if ($_[$i++] =~ /(\*+)/);
+			$line[$state++] = ", "	if ($n);
+		}
+	}
+}
+exit 1 if (!$lines);

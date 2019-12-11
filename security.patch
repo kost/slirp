@@ -1,0 +1,344 @@
+diff -NurbB slirp-1.0.14pre1/src/debug.c slirp-1.0.14pre1-new/src/debug.c
+ --- slirp-1.0.14pre1/src/debug.c	2000-09-30 15:23:36.000000000 -0700
+ +++ slirp-1.0.14pre1-new/src/debug.c	2004-06-19 19:01:38.000000000 -0700
+ @@ -299,7 +299,8 @@
+  			
+  	for (so = tcb.so_next; so != &tcb; so = so->so_next) {
+  		
+ -		n = sprintf(buff, "tcp[%s]", so->so_tcpcb?tcpstates[so->so_tcpcb->t_state]:"NONE");
+ +		n = snprintf(buff, sizeof(buff), "tcp[%s]", 
+ +				so->so_tcpcb?tcpstates[so->so_tcpcb->t_state]:"NONE");
+  		while (n < 17)
+  		   buff[n++] = " ";
+  		buff[17] = 0;
+ @@ -313,7 +314,7 @@
+  		   
+  	for (so = udb.so_next; so != &udb; so = so->so_next) {
+  		
+ -		n = sprintf(buff, "udp[%d sec]", (so->so_expire - curtime) / 1000);
+ +		n = snprintf(buff, sizeof(buff), "udp[%d sec]", (so->so_expire - curtime) / 1000);
+  		while (n < 17)
+  		   buff[n++] = " ";
+  		buff[17] = 0;
+ diff -NurbB slirp-1.0.14pre1/src/ip_icmp.c slirp-1.0.14pre1-new/src/ip_icmp.c
+ --- slirp-1.0.14pre1/src/ip_icmp.c	1999-08-14 14:47:23.000000000 -0700
+ +++ slirp-1.0.14pre1-new/src/ip_icmp.c	2004-06-20 15:25:31.000000000 -0700
+ @@ -229,8 +229,8 @@
+    ip = mtod(msrc, struct ip *);
+  #if DEBUG  
+    { char bufa[20], bufb[20];
+ -    strcpy(bufa, inet_ntoa(ip->ip_src));
+ -    strcpy(bufb, inet_ntoa(ip->ip_dst));
+ +    strncpy(bufa, inet_ntoa(ip->ip_src), sizeof(bufa));
+ +    strncpy(bufb, inet_ntoa(ip->ip_dst), sizeof(bufb));
+      DEBUG_MISC((dfd, " %.16s to %.16s\n", bufa, bufb));
+    }
+  #endif
+ diff -NurbB slirp-1.0.14pre1/src/main.c slirp-1.0.14pre1-new/src/main.c
+ --- slirp-1.0.14pre1/src/main.c	2001-03-25 19:38:24.000000000 -0800
+ +++ slirp-1.0.14pre1-new/src/main.c	2004-06-20 15:09:22.000000000 -0700
+ @@ -141,14 +141,14 @@
+      }
+    }
+    strcpy(buff, "/tmp/");
+ -  strcat(buff, username);
+ +  strncat(buff, username, sizeof(buff)-6);
+    socket_path = strdup(buff);
+  #else
+    if ((bptr = (char *)getenv("HOME")) == NULL) {
+      lprint("Error: can"t find your HOME\n");
+      slirp_exit(1);
+    }
+ -  strcpy(buff, bptr);
+ +  strncpy(buff, bptr, sizeof(buff));
+    strcat(buff, "/.slirp_socket");
+    socket_path = strdup(buff);
+  #endif
+ @@ -253,6 +253,7 @@
+  	slirp_exit(1);
+        }
+        sock_un.sun_family = AF_UNIX;
+ +      /* TODO: perform length checking here */
+        strcpy(sock_un.sun_path, socket_path);
+        ret = connect(s, (struct sockaddr *)&sock_un,
+  		    sizeof(sock_un.sun_family) + sizeof(sock_un.sun_path));
+ @@ -275,11 +276,11 @@
+        
+        if (slirp_socket_passwd) {
+  	/* Internet connection */
+ -	sprintf(buff, "%d %d %s", unit, 0, slirp_socket_passwd);
+ +	snprintf(buff, sizeof(buff), "%d %d %s", unit, 0, slirp_socket_passwd);
+        }
+  #ifndef NO_UNIX_SOCKETS
+        else {
+ -	sprintf(buff, "%d %d %s", unit, (int)getpid(), ttyname(0));
+ +	snprintf(buff, sizeof(buff), "%d %d %s", unit, (int)getpid(), ttyname(0));
+        }
+  #endif
+        write(s, buff, strlen(buff)+1);
+ @@ -350,16 +351,21 @@
+    getouraddr();
+    
+    if ((bptr = (char *)getenv("HOME")) != NULL) {
+ -    strcpy(buff, bptr);
+ +    strncpy(buff, bptr, sizeof(buff));
+  #ifdef USE_PPP
+      path_upap = (char *)malloc(strlen(buff) + 15);
+ +    /* TODO: perform length checking */
+      strcpy(path_upap, buff);
+ +    /* TODO: perform length checking */
+      strcat(path_upap, "/.pap-secrets");
+      
+      path_chap = (char *)malloc(strlen(buff) + 15);
+ +    /* TODO: perform length checking */
+      strcpy(path_chap, buff);
+ +    /* TODO: perform length checking */
+      strcat(path_chap, "/.chap-secrets");
+  #endif
+ +    /* TODO: perform length checking */
+      strcat(buff, "/.slirprc");
+      config(buff, ttys->unit);
+    }
+ @@ -963,11 +969,11 @@
+  #endif
+  				   sprintf(buff2, "SLIP, MTU %d, MRU %d", if_mtu, if_mru);
+  #ifndef FULL_BOLT
+ -				sprintf(buff,
+ +				snprintf(buff, sizeof(buff),
+  					"1 Attached as unit %d, device %s\r\n\r\n[talking %s, %d baud]\r\n\r\nSLiRP Ready...",
+  					unit, device?device:"(socket)", buff2, ttyp->baud);
+  #else
+ -				sprintf(buff,
+ +				snprintf(buff, sizeof(buff),
+  					"1 Attached as unit %d, device %s\r\n\r\n[talking %s]\r\n\r\nSLiRP Ready ...",
+  					unit, device, buff2);
+  #endif
+ diff -NurbB slirp-1.0.14pre1/src/misc.c slirp-1.0.14pre1-new/src/misc.c
+ --- slirp-1.0.14pre1/src/misc.c	2000-09-09 10:48:43.000000000 -0700
+ +++ slirp-1.0.14pre1-new/src/misc.c	2004-06-20 15:31:28.000000000 -0700
+ @@ -359,10 +359,10 @@
+
+  		if (x_port >= 0) {
+  #ifdef HAVE_SETENV
+ -			sprintf(buff, "%s:%d.%d", inet_ntoa(our_addr), x_port, x_screen);
+ +			snprintf(buff, sizeof(buff), "%s:%d.%d", inet_ntoa(our_addr), x_port, x_screen);
+  			setenv("DISPLAY", buff, 1);
+  #else
+ -			sprintf(buff, "DISPLAY=%s:%d.%d", inet_ntoa(our_addr), x_port, x_screen);
+ +			snprintf(buff, sizeof(buff), "DISPLAY=%s:%d.%d", inet_ntoa(our_addr), x_port, x_screen);
+  			putenv(buff);
+  #endif
+  		}
+ @@ -392,13 +392,14 @@
+  		   } while (c);
+
+  		argv[i] = 0;
+ +		/* TODO: is this safe?  see execlp comment below. */
+  		execvp(argv[0], argv);
+
+  		/* Ooops, failed, let"s tell the user why */
+  		  {
+  			  char buff[256];
+
+ -			  sprintf(buff, "Error: execvp of %s failed: %s\n",
+ +			  snprintf(buff, sizeof(buff), "Error: execvp of %s failed: %s\n",
+  				  argv[0], strerror(errno));
+  			  write(2, buff, strlen(buff)+1);
+  		  }
+ @@ -471,7 +472,7 @@
+  		sock_in.sin_port = htons(slirp_socket_port);
+  		if (connect(s, (struct sockaddr *)&sock_in, sizeof(sock_in)) != 0)
+  		   slirp_exit(1); /* just exit...*/
+ -		sprintf(buff, "kill %s:%d", slirp_socket_passwd, slirp_socket_unit);
+ +		snprintf(buff, sizeof(buff), "kill %s:%d", slirp_socket_passwd, slirp_socket_unit);
+  		write(s, buff, strlen(buff)+1);
+  	}
+  #ifndef NO_UNIX_SOCKETS
+ @@ -881,10 +882,10 @@
+  		/* Set the DISPLAY */
+             if (x_port >= 0) {
+  #ifdef HAVE_SETENV
+ -             sprintf(buff, "%s:%d.%d", inet_ntoa(our_addr), x_port, x_screen);
+ +             snprintf(buff, sizeof(buff), "%s:%d.%d", inet_ntoa(our_addr), x_port, x_screen);
+               setenv("DISPLAY", buff, 1);
+  #else
+ -             sprintf(buff, "DISPLAY=%s:%d.%d", inet_ntoa(our_addr), x_port, x_screen);
+ +             snprintf(buff, sizeof(buff), "DISPLAY=%s:%d.%d", inet_ntoa(our_addr), x_port, x_screen);
+               putenv(buff);
+  #endif
+             }
+ @@ -895,6 +896,10 @@
+             for (s = 3; s <= 255; s++)
+               close(s);
+
+ +           /* TODO: This type of exec is very dangerous if this process is privileged in any way.
+ +            *       A user could escalate privileges by subverting the $PATH, and having an rsh
+ +            *       binary of their own making get executed.
+ +            */
+             execlp("rsh","rsh","-l", user, host, args, NULL);
+
+             /* Ooops, failed, let"s tell the user why */
+ diff -NurbB slirp-1.0.14pre1/src/options.c slirp-1.0.14pre1-new/src/options.c
+ --- slirp-1.0.14pre1/src/options.c	1998-12-05 19:30:54.000000000 -0800
+ +++ slirp-1.0.14pre1-new/src/options.c	2004-06-20 15:24:28.000000000 -0700
+ @@ -635,8 +635,8 @@
+  	if (!buff) {
+  		buff1[0] = 0;
+  		if ((bptr = (char *)getenv("HOME")) != NULL)
+ -		   strcpy(buff1, bptr);
+ -		strcat(buff1, "/.slirp_start");
+ +		   strncpy(buff1, bptr, sizeof(buff1));
+ +		strncat(buff1, "/.slirp_start", sizeof(buff1));
+  		lfd = fopen(buff1, "w");
+  		bptr = buff1;
+  	} else {
+ @@ -717,7 +717,7 @@
+  				/* Found a match, print the help */
+  				count++;
+  				if (cfg[i].command_line)
+ -				   sprintf(str, "Command-line: %s\r\n", cfg[i].command_line);
+ +				   snprintf(str, sizeof(str), "Command-line: %s\r\n", cfg[i].command_line);
+  				else
+  				   str[0] = 0;
+  				if (cfg[i].type == CFG_TELNET)
+ @@ -961,6 +961,7 @@
+
+  		/* Create a new one */
+  		sock_un.sun_family = AF_UNIX;
+ +		/* TODO: length check */
+  		strcpy(sock_un.sun_path, socket_path);
+  		if ((bind(s, (struct sockaddr *)&sock_un,
+  			  sizeof(sock_un.sun_family) + sizeof(sock_un.sun_path)) < 0) ||
+ diff -NurbB slirp-1.0.14pre1/src/ppp/auth.c slirp-1.0.14pre1-new/src/ppp/auth.c
+ --- slirp-1.0.14pre1/src/ppp/auth.c	1999-10-22 18:33:59.000000000 -0700
+ +++ slirp-1.0.14pre1-new/src/ppp/auth.c	2004-06-20 15:21:37.000000000 -0700
+ @@ -325,8 +325,10 @@
+      lcp_options *ao = &lcp_allowoptions[0];
+
+      /* Default our_name to hostname, and user to our_name */
+ +    /* TODO: check lengths */
+      if (our_name[0] == 0 || usehostname)
+  	strcpy(our_name, hostname);
+ +    /* TODO: check lengths */
+      if (user[0] == 0)
+  	strcpy(user, our_name);
+
+ @@ -884,6 +886,7 @@
+  	 * Special syntax: @filename means read secret from file.
+  	 */
+  	if (word[0] == "@") {
+ +            /* TODO: check lengths */
+  	    strcpy(atfile, word+1);
+  	    if ((sf = fopen(atfile, "r")) == NULL) {
+  		do_syslog(LOG_WARNING, "can"t open indirect secret file %s",
+ @@ -899,6 +902,7 @@
+  	    }
+  	    fclose(sf);
+  	}
+ +        /* TODO: check lengths */
+  	if (secret != NULL)
+  	    strcpy(secret, word);
+
+ @@ -918,6 +922,7 @@
+  	    if (ap == NULL)
+  		novm("authorized addresses");
+  	    ap->next = NULL;
+ +            /* TODO: check lengths */
+  	    strcpy(ap->word, word);
+  	    if (addr_list == NULL)
+  		addr_list = ap;
+ diff -NurbB slirp-1.0.14pre1/src/ppp/chap.c slirp-1.0.14pre1-new/src/ppp/chap.c
+ --- slirp-1.0.14pre1/src/ppp/chap.c	1995-09-17 04:26:48.000000000 -0700
+ +++ slirp-1.0.14pre1-new/src/ppp/chap.c	2004-06-19 19:08:59.000000000 -0700
+ @@ -653,7 +653,7 @@
+      char msg[256];
+
+      if (code == CHAP_SUCCESS)
+ -	sprintf(msg, "Welcome to %s.", hostname);
+ +	snprintf(msg, sizeof(msg), "Welcome to %s.", hostname);
+      else
+  	sprintf(msg, "I don"t like you.  Go "way.");
+      msglen = strlen(msg);
+ diff -NurbB slirp-1.0.14pre1/src/ppp/ipcp.c slirp-1.0.14pre1-new/src/ppp/ipcp.c
+ --- slirp-1.0.14pre1/src/ppp/ipcp.c	1995-09-17 04:30:24.000000000 -0700
+ +++ slirp-1.0.14pre1-new/src/ppp/ipcp.c	2004-06-20 15:22:57.000000000 -0700
+ @@ -1091,9 +1091,9 @@
+      char strspeed[32], strlocal[32], strremote[32];
+      char *argv[8];
+
+ -    sprintf(strspeed, "%d", baud_rate);
+ -    strcpy(strlocal, ip_ntoa(ipcp_gotoptions[f->unit].ouraddr));
+ -    strcpy(strremote, ip_ntoa(ipcp_hisoptions[f->unit].hisaddr));
+ +    snprintf(strspeed, sizeof(strspeed), "%d", baud_rate);
+ +    strncpy(strlocal, ip_ntoa(ipcp_gotoptions[f->unit].ouraddr), sizeof(strlocal));
+ +    strncpy(strremote, ip_ntoa(ipcp_hisoptions[f->unit].hisaddr), sizeof(strremote));
+
+      argv[0] = script;
+      argv[1] = ifname;
+ diff -NurbB slirp-1.0.14pre1/src/tcp_subr.c slirp-1.0.14pre1-new/src/tcp_subr.c
+ --- slirp-1.0.14pre1/src/tcp_subr.c	2000-08-30 17:38:32.000000000 -0700
+ +++ slirp-1.0.14pre1-new/src/tcp_subr.c	2004-06-20 15:27:29.000000000 -0700
+ @@ -730,7 +730,7 @@
+  				if (*ptr++ == 0) {
+  					n++;
+  					if (n == 2) {
+ -						sprintf(args, "rlogin -l %s %s",
+ +						snprintf(args, sizeof(args), "rlogin -l %s %s",
+  							ptr, inet_ntoa(so->so_faddr));
+  					} else if (n == 3) {
+  						i2 = so_rcv->sb_wptr - ptr;
+ @@ -738,9 +738,9 @@
+  							if (ptr[i] == "/") {
+  								ptr[i] = 0;
+  #ifdef HAVE_SETENV
+ -								sprintf(term, "%s", ptr);
+ +								snprintf(term, sizeof(term), "%s", ptr);
+  #else
+ -								sprintf(term, "TERM=%s", ptr);
+ +								snprintf(term, sizeof(term), "TERM=%s", ptr);
+  #endif
+  								ptr[i] = "/";
+  								break;
+ @@ -1012,6 +1012,7 @@
+  			n4 =  (laddr & 0xff);
+
+  			m->m_len = bptr - m->m_data; /* Adjust length */
+ +			/* TODO: length check */
+  			m->m_len += sprintf(bptr,"ORT %d,%d,%d,%d,%d,%d\r\n%s",
+  					    n1, n2, n3, n4, n5, n6, x==7?buff:"");
+  			return 1;
+ @@ -1043,6 +1044,7 @@
+  			n4 =  (laddr & 0xff);
+
+  			m->m_len = bptr - m->m_data; /* Adjust length */
+ +			/* TODO: length check */
+  			m->m_len += sprintf(bptr,"27 Entering Passive Mode (%d,%d,%d,%d,%d,%d)\r\n%s",
+  					    n1, n2, n3, n4, n5, n6, x==7?buff:"");
+
+ @@ -1084,6 +1086,7 @@
+  				return 1;
+
+  			m->m_len = bptr - m->m_data; /* Adjust length */
+ +			/* TODO: length check */
+  			m->m_len += sprintf(bptr, "DCC CHAT chat %lu %u%c\n",
+  			     (unsigned long)ntohl(so->so_faddr.s_addr),
+  			     ntohs(so->so_fport), 1);
+ @@ -1092,6 +1095,7 @@
+  				return 1;
+
+  			m->m_len = bptr - m->m_data; /* Adjust length */
+ +			/* TODO: length check */
+  			m->m_len += sprintf(bptr, "DCC SEND %s %lu %u %u%c\n",
+  			      buff, (unsigned long)ntohl(so->so_faddr.s_addr),
+  			      ntohs(so->so_fport), n1, 1);
+ @@ -1100,6 +1104,7 @@
+  				return 1;
+
+  			m->m_len = bptr - m->m_data; /* Adjust length */
+ +			/* TODO: length check */
+  			m->m_len += sprintf(bptr, "DCC MOVE %s %lu %u %u%c\n",
+  			      buff, (unsigned long)ntohl(so->so_faddr.s_addr),
+  			      ntohs(so->so_fport), n1, 1);
+ diff -NurbB slirp-1.0.14pre1/src/ttys.c slirp-1.0.14pre1-new/src/ttys.c
+ --- slirp-1.0.14pre1/src/ttys.c	2001-03-25 19:40:20.000000000 -0800
+ +++ slirp

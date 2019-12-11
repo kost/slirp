@@ -1,0 +1,17 @@
+This specific build is a merge of two separate SLiRP updates--
+
+	Slirp 1.0c-KK
+	=============
+
+* Modified Feb 5 1998 by Karl Krueger <karl@simons-rock.edu>
+*    with instructions from Philip C. Tsao
+
+	Slirp 1.0g
+	==========
+* See changelog.  Numerous fixes.
+
+The merging was done by me, Dan Kaminsky(effugas@best.com).
+
+Any comments / fixes can be forwarded to either myself or Kelly
+Price(tygris+slirp@erols.com).  Look for SLiRP on Freshmeat
+(http://www.freshmeat.net).

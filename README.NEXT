@@ -1,0 +1,174 @@
+**********************************************************************
+***** PLEAESE READ THIS WHOLE FILE BEFORE CONTINUING ANY FURTHER *****
+**********************************************************************
+
+
+What is Slirp?
+==============
+
+Slirp is a TCP/IP emulator which turns an ordinary shell account into a
+(C)SLIP/PPP account.  This allows shell users to use all the funky Internet
+applications like Netscape, Mosaic, CUSeeMe, etc.
+
+
+Unpacking and Compiling Slirp
+=============================
+
+To unpack Slirp type the following command at your shell prompt:
+
+gzip -dc slirp-VERSION.tar.gz | tar xvf -
+
+Of course, if you have the latest GNU tar...
+
+tar xfvz slirp-VERSION.tar.gz
+
+Where VERSION is the version of Slirp you are unpacking.  This will unpack
+the Slirp package into a directory called slirp-VERSION.
+
+To compile Slirp type the following commands at your shell prompt:
+
+cd slirp-VERSION/src
+./configure
+make
+
+Notes:
+
+    if you do not intend to use PPP you can give ./configure the flag
+    "--disable-ppp".  This will make a somewhat smaller executable.
+
+    if you wish to disable the MS type DNS transfer for PPP, or enable
+    MS DCC functionality, you will need to edit the created Makefile and
+    add/remove the options.
+    By default USE_MS_DNS is enabled, MS_DCC is disabled.
+
+
+That's all there is to it.  If the compilation failed, read "Getting Help"
+below for information on how to get help.
+
+You should be left with a file called "slirp", this is the Slirp executable.
+After compilation, you can type:
+
+strip slirp
+
+to make the Slirp executable smaller, but this will also remove any
+debugging information from the executable.
+
+Here are some common ./configure/compiler/pre-processor/etc. problems and
+suggestions for fixing them:
+
+* "configure: error: can not run test program while cross compiling" (or
+similar errors about cross compiling).  This almost always happens due to an
+error in the setup of the compiler.  Look in the file config.log for clues
+as to why it failed, or send it to your sysadmin for help.
+
+* "gcc: xxxxxxx.p: No such file or directory.": This can be completely
+ignored when running the pre-processor, and can probably be ignored in the
+actual compilation.  The .p files only contain the function prototypes.
+
+* "gcc: warning: no previous prototype for XXX'": Again, you can ignore
+this.
+
+* "RUN_MAKE_AGAIN: not found ... *** Error code 1": This is normal.  As
+suggested, simply run "make" again.
+
+
+Running and Quitting Slirp
+==========================
+
+Once you have compiled Slirp you can delete everything except the file
+called "slirp", this is the Slirp executable.  I suggest you also keep all
+the files in the "docs" directory, this is where all the documentation is
+kept.  Copy the Slirp executable somewhere in your home directory (E.g.:
+~/bin) then to run Slirp, you simply type:
+
+~/bin/slirp
+or ~/bin/slirp -P (for PPP operation)
+
+(or whatever the full path to "slirp" is).  That's it.  Now you activate
+your SLIP/PPP software, and start your applications.
+
+All you have to remember is this: Once you run Slirp, your shell account now
+looks exactly like a SLIP/PPP account (with some limitations of course).
+Any documentation that you have telling you how to connect to a SLIP/PPP
+account is completely valid for Slirp as well.
+
+To quit Slirp you simply kill your SLIP/PPP software and type five 0's
+(zeroes), with a 1 second gap between each zero.  Slirp will then exit and
+you will be back at your shell prompt.
+
+You can also "disconnect" Slirp by typing five 1's (one's), with a 1 second
+gap between each.  This will disconnect Slirp from your shell's terminal and
+put Slirp in the background.  Later, you can type "slirp -l 0" to
+"reconnect" Slirp again.  Please read Section 10, "Load-balancing" and
+Section 11, "Link-resumption" of the Slirp manual for more information.
+
+Slirp has lots of options available, so while this will mostly get you
+up and running in the first instance, reading the manual is worthwhile.
+
+
+Files in the Slirp package
+==========================
+
+Here are the list of files you'll find within the slirp package:
+
+COPYRIGHT       Conditions of the Copyright on Slirp.  Please read this.
+ChangeLog       Descriptions of changes made to slirp from version to
+		version.  Also details all contributors, and their
+		contributions.
+IMPORTANT       Information about who's the latest maintainer.
+		(Hint, it's not Danny)
+README          What was this file.
+README.NEXT     This file.  Really!
+docs/CONFIG     List of configuration options (probably out of date)
+docs/alt.dcom.slip-emulators.FAQ
+                This is the FAQ (Frequently Asked Questions) from the
+                newsgroup alt.dcom.slip-emulators.
+docs/slirp.doc  The Slirp manual.
+src/*           The source code to Slirp.
+
+Getting Help
+============
+
+There are several sources of help.  First, read the Slirp manual called
+slirp.doc in the "docs" directory of the Slirp package, especially Section
+13, "Troubleshooting" and Section 14, "Answers to Frequently Asked Questions
+(FAQs)".
+
+There is also a Newsgroup dedicated to SLIP-emulators called
+alt.dcom.slip-emulators.  You will find lots of discussion about Slirp and
+other "SLIP-emulators".  The FAQ (Frequently Asked Questions) for
+alt.dcom.slip-emulators is included in the "docs" directory, I would suggest
+reading this as well.
+
+The Slirp website (http://slirp.sourceforge.net) has some information
+too.  Go there!
+
+A mailing list for Slirp development is hosted by SourceForge.
+If you are intrested in pitching in, go ahead and subscribe.
+
+If all else fails, send Kelly, the new maintainer, an e-mail
+with the following information:
+
+* Output of the command "uname -a" on the remote system;
+* Operating System name and version you run on your PC;
+  * If it's Linux, the name of which distribution you are running and
+    which version.
+* What compiler and which version you're compiling with.
+  HINT:  If it's not GCC, then I will be tempted to have you switch to it and
+    try it again.  Seriously, GCC is much better!
+* Version of Slirp you are using (IMPORTANT!!!);
+  HINT:  If it's a 1.0g or less, you really need to upgrade first.  This is
+    what I'll say first -- Upgrade and try it again.
+* If you managed to get Slirp running, run Slirp as "slirp -S" then try
+  whatever failed.  When you exit Slirp, you should have a file called
+  "slirp_stats".  Send me this file; and
+* Anything else you consider relevant.
+
+Don't send me core dumps.  I can't handle 'em, and they may be for an different
+system than what I have!!!
+
+*PLEASE* include all the above information.  If you do not, I may simply
+press "d".  I can't guarantee a response, but I will try my best.
+
+Kelly Price and the Slirp Development team.
+(Thanks go out to Dan, the previous developer.)

@@ -1,0 +1,1470 @@
+From stevew@netcom.com Wed Aug 16 01:33:24 1995
+Return-Path: stevew@netcom.com
+Received: from netcom21.netcom.com (stevew@netcom21.netcom.com [192.100.81.135]) by blitzen.canberra.edu.au (8.6.10/8.6.9) with ESMTP id BAA17220 for <danjo@blitzen.canberra.edu.au>; Wed, 16 Aug 1995 01:32:14 +1000
+Received: by netcom21.netcom.com (8.6.12/Netcom)
+	id IAA29646; Tue, 15 Aug 1995 08:25:30 -0700
+From: stevew@netcom.com (Steve Wilson)
+Message-Id: <199508151525.IAA29646@netcom21.netcom.com>
+Subject: Latest FAQ
+To: danjo@BLITZEN.CANBERRA.EDU.AU
+Date: Tue, 15 Aug 1995 08:25:30 -0700 (PDT)
+X-Mailer: ELM [version 2.4 PL23]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Length: 57991     
+Status: RO
+X-Status: 
+
+
+Alt.dcom.slip-emulators FAQ  V1.5   Aug 10, 1995
+
+This has been completely re-organized, i.e. there is a some what
+logical organization now with some of the descriptions you'd
+asked for!  There is also some meat to the questions relevant to
+Windows 95, etc.   
+
+Steve Wilson
+-------------------------------------------------------------------
+
+Questions:
+
+1.0 What is a Slip Emulator anyway?
+   1.  What is a Slip/PPP emulator?
+   2.  Is Slirp better using  SLIP or PPP?
+
+2.0 Where to get Slip Emulator Software?:
+
+   1.  Is Slirp Free to Use?  Will I be charged long distance fees for using
+       this because it uses my modem?
+   2.  Where can I get slirp?
+   3.  Where are there precompiled binaries for Slirp for... ?
+   4.  Where can I get precompiled binaries for TIA?
+   5.  Where on Netcom is a pre-compiled version of slirp?
+
+   (Need to add stuff about twinsock...anyone want to write this section?)
+
+3.0 Emulator Configuration, i.e. How do I make this stuff work?
+
+   1. Slirp starts up ok except doesn't display the DNS so I told
+      it what the DNS was.  However, it won't load my local homepage?
+   2. What should my network configuration look like for trumpet
+      winsock for netcom?
+   3. How do I use slirp to telnet into my linux box?
+   4. What do the configuration files need to look like for linux?
+   5. Is it possible to send mail from my Linux box to/thru Netcom while
+   6. How do I set up slirp for an X connection?
+   7. What are the new formats for the .slirprc commands in the .95x
+      release of slirp? What are the new control port commands? 
+   8. I'm trying to get shell via telnet on slirp, without 
+      logging in again. What is the configuration?
+   9. Does anyone have instructions/hints as to how to use Windows 95
+      with slirp? 
+
+4.0 Emulator Performance
+
+   1. Tia/Slirp Benchmark (This is slirp .9o vs TAI 1.0 I think..)
+
+5.0 Miscilaneous Problems/solutions...
+
+   1. The posted solution from Dan(Author of SLIRP) for the .9o 
+      lockup problem(RWIN adjustments, etc.)
+   2. 32 bit Netscape on Win95 has DNS problems. Why? 
+   3. Using OS/2 my baud rate say it's 1200. How do I make this faster for
+      slirp?
+   4. How do you login using the slirp.telnetd?
+   5. Slirp says it's running 9600 baud. How do I make ir run at 14.4?
+   6. Where can I find nntpd for netcom? How do I configure it for
+      Netcom?
+   7. TCPman launches when I try to run Netscape..but netscape never
+      comes up?
+   8. I start up a connection under Win95 and I only get a PPP connection?
+      How do I configure it for slip?
+   9. Why is using the telnetd better than just logging in twice? 
+   10. Why doesnt' FTP-PM work with slirp?
+   11. Will TIA 2.0 support PPP and CSLIP? Why don't they support ICMP?
+       I'd love to see automagic port redirection as well?
+   12. Why does rlogin work from the port master I'm dialing into, but
+       telnet doesn't for setting up slirp between then end points? 
+   13. Address 10.0.2.0 doesn't work under InterSlip from my Mac. Why not?
+   14. How do I setup POP mail using slirp?
+
+(note - I'm still not completely happy with this organization... but it's a start
+            and it's all I've got time for at this point.  Next release...)
+
+----------------------------------------------------------------------------
+1.0 What is a Slip Emulator anyway?
+
+Question 1.1
+
+What is a SLIP Emulator?
+
+A slip emulator is a piece of software that runs on the host machine that you 
+call into. This software accepts the bits you throw it's way using SLIP  
+and then submits these bits to the host computer for transmission on the
+internet.
+ 
+When bits are received from the internet for the remote system, the emulator
+packages them up into the SLIP protocol and send them along to your remote
+system.
+
+Boy...that was terse and to the point ;-)
+
+Another way of putting this is that the SLIP emulator acts as a middleman 
+between the internet and your remote system.  Your remote system speaks SLIP
+at the middleman, and he interprets it into the language used by the 
+internet.  
+
+These two languages aren't really that different, and actually, SLIP is the
+same language as used on the internet plus some extra packaging to send it
+over your phone line.  
+
+You need to use SLIP (or PPP..explained later) over the phone line because 
+you are transferring binary information instead of just text.  If you've used
+zmodem or xmodem or kermit...you are using these protocols for the same reason
+as you are using SLIP or PPP. The primary difference between these protocols 
+and SLIP is that SLIP corresponds(as just mentioned) to the language of 
+the internet (TCP/IP...Transport Control Protocol/Internet Protocol...
+a real mouthful even as TCP/IP ;-)
+
+----------------------------------------------------------------------------
+
+Question 1.2
+
+Leo Perez y Perez (perez@csulb.edu) wrote:
+: Is SLiRP better as SLIP or PPP?
+: or, what is the difference between them anyway?
+:
+: Leo Perez y Perez    
+: perez@csulb.edu      
+
+There are really three protocols available with slirp.
+
+They are SLIP, CSLIP, and PPP.
+
+The protocols have the following properties...
+
+Slip is merely raw IP frames sent in between two Flag characters, one
+indicating start, and the other indicating end of packet.  There is
+an escaping method when either of the two flags appears inside the 
+actual IP datagram.
+
+CSLIP is sent via the same basic mechanism over the physical medium(your
+phone line) but an added level of compression is applied to the 
+header of the IP datagram itself such that the IP header is reduced
+in sized from something like 40 bytes to something like 7 bytes.  This
+savings happens on EVERY packet.  This is a style of compression that
+is beyond the V.42bis compression algorithm used by your modem.  Estimates
+give about a 20% increase in performance(give or take 10%).
+
+PPP (or Point-to-Point Protocol) really might be classified more like
+a byte oriented HDLC.  That means that it takes the IP datagram and puts
+inside yet another encapsulating packet.  This packet has a CRC across
+it so bad packets can be detected at the lowest level.  There are also
+security features built into this protocol.  Basically, it is a far more
+robust protocol than Slip or CSLIP.  PPP also has the added property that
+the Slirp implementation can escape several control characters, so you
+are more likely to get a successful link up on a line that isn't 
+8 bit clean. (aka a serial line that has some sort of input processing
+occuring.) 
+
+>From previous performance measurements, people have found that CSLIP
+is fastest when using Slirp.  Some folks(like me) wind up using PPP
+over CSLIP because of the need for the escaping feature. In my case
+this allows me to do ftp sessions that don't work under CSLIP.
+
+Now, that is probably more than you ever wanted to know ;-)
+
+Steve Wilson
+----------------------------------------------------------------------------
+2.0 Where to get Slip Emulator Software?:
+
+Question 2.1
+
+In article <waddell.803517481@hercules>, waddell@HERCULES.CS.UREGINA.CA 
+says...
+>
+>Is SLiRP free to use (ie.  will I be charged long distance fees for using
+>this because it uses my modem> or does it use the University's (or Unix 
+>server's modem>?
+>
+
+Yes. SLiRP is a free copyrighted software.  SLiRP runs on your UNIX shell 
+account and let's you connect to the internet.  You need a client PC with a 
+TCP stack like Trumpet Winsock which uses your modem to access your shell 
+account.  If there is a long distance charge to access your university's 
+computer, then you will have to pay those charges, as well as, any usage fees 
+that you are now paying.  Otherwise, you don't have to pay for accessing the 
+internet.
+
+Hope this helps,
+
+Lynn Larrow        
+llarrow@netcom.com                                Pacific Grove, CA
+http://www.webcom.com/~llarrow/tiarefg.html (SLiRP/TIA/Trumpet Setup)
+[Editor's note:  The above is a VERY useful home page, and is packed
+ with more info than you'll find here!!]
+----------------------------------------------------------------------------
+Question 2.2
+
+In article <DB9Hwz.BDL@agora.rdrop.com>, lucasa@postes.gaylord.org says...
+>Could someone please inform me of a FTP site for the 
+>updates to slirp?
+>
+>Lucas
+
+ftp://peace.wit.com/danjo/slirp/  or
+ftp://blitzen.canberra.edu.au/pub/slirp/  or
+ftp://ibc.wustl.edu/pub/slirp_bin/
+
+Lynn Larrow        "When the shoe fits, the foot is forgotten"
+llarrow@netcom.com                                Pacific Grove, CA
+----------------------------------------------------------------------------
+Question 2.3
+
+In article <3s35j8$eab@gulfa.kuwait.net>, kcc94td1@access.kuwait.net says...
+>Anyone know where there are pre-compiled SLiRP binaries?  This would be 
+>very helpful and highly appreciated :-D
+>
+>Khaled al-Feeli
+
+Try ftp://ibc.wustl.edu/pub/slirp_bin/USE_AT_OWN_RISK/
+
+I also have some other links to slirp binary sites at this URL:
+
+http://www.webcom.com/~llarrow/tiafaqs.html
+
+Hopefully they are all still active :)
+
+Lynn Larrow                        
+llarrow@netcom.com                                Pacific Grove, CA
+----------------------------------------------------------------------------
+Question 2.4
+
+> Where can I get precompiled binaries for TIA?
+
+You can get TIA by :
+ftp: //marketplace.com/tia
+
+There is also shareware for different systems under:
+
+ftp: //marketplace.com/tia/shareware
+
+----------------------------------------------------------------------------
+Question 2.5
+
+In article <stew1117DAJ8vy.96s@netcom.com>,
+>stew1117@netcom.com (stewart coulter) wrote:
+>I am trying to locate the latest version of slirp, the one site that I 
+>tried I was unable to locate it any directories, please help me.  I need 
+>the FTP site and directory.  Respond via email.
+
+Folks on Netcom can get the release files and a few other doo-dads from my 
+directory:
+
+  ~ldobbs/slirp
+
+The modified source for tcp_input.c (see other threads) is there, along with 
+some simple (and undocumented) scripts to build the binary.
+
+Lee Dobbs                     Milpitas CA            Voice: 408-946-7860
+ldobbs@netcom.com                 USA                Fax:   408-262-9392
+----------------------------------------------------------------------------
+3.0 Emulator Configuration, i.e. How do I make this stuff work?
+
+Question 3.1
+
+In article <DBD1MG.6J5@zeno.fit.edu>, lkhan@winnie.fit.edu says...
+>I have installed the latest version of slirp on the Unix machine.  It
+>conplied properly (although I had to erase some files so it won't go over
+>disc quota).  Using Trumpet Winsock, I ran it using the command line:
+>"slirp -m 552 -c" (I set all the configurations as stated on the slirp home
+>page.)  It shows all the messages at the beginning expect for the dns ip
+>address.  So I used the "I.P. address of slirp" for the dns.
+>
+>When running Mosiac (ver. 2beta4), it wouldn't load the homepage.  The 
+>messages at the bottom stop at "Waiting..." and sticks there forever, the
+>little Mosaic "earth" still moves.
+>
+>What can be wrong??
+>
+>On the same machine, I can still run twinsock properly (it works.)
+
+My best guesses would be one of two things.  The first is that using the IP 
+address of the machine slirp is running on as your DNS isn't working.  In many 
+university situations, they will have one or two machines which serve as 
+nothing more than DNS servers.  You need to find out the address of these 
+machines.  The best idea here would be to ask the sysadmin at your site.
+
+The second good possibility is that a terminal server is interfering.  Using 
+SLIP/CSLIP requires an absolutely clean 8-bit line, something that most 
+terminal servers in a university setting have trouble with.  Try to find out 
+if your terminal server has a 'terminal download' option, or something similar 
+to set the connection to 8-bit clean.  Alternatively, try using SLiRPs PPP 
+mode as you can escape control characters which may help the problem.  BTW, 
+this would explain why twinsock works as it defaults to a 6-bit mode, which 
+means it can run over almost any connection.  It also makes it dog slow.
+
+Hope this helps.
+
+Matt
+mnm@goodnet.com
+matt.moore@asu.edu
+----------------------------------------------------------------------------
+Question 3.2
+
+In article <sfbDBtEx8.FCz@netcom.com>, sfb@netcom.com (sfb) wrote:
+>I currently have a Netcom Shell Account and am using TIA to emulate slip.
+> ...
+>What should my settings be under Network Configuration?  I have tried 
+>tons of various settings, such as 192.0.2.2 (works for Eudora) and 
+>netcom.com
+
+First, I suggest adding these to the end of your hosts file in the Trumpet 
+directory:
+
+(Editor's note - Should probably change the 192.0.2.x stuff to 10.0.2.x
+ in the table below ... see the linux configuration info for what I mean..)
+
+192.100.81.101  netcomsv netcomsv.netcom.com
+192.100.81.105  ns.netcom.com
+192.100.81.254  netcomgw netcomgw.netcom.com
+192.0.2.1       local-pc
+192.0.2.2	mail.netcom.com smtp-server pop-server
+192.0.2.3	netcom.com news.netcom.com nntp-server
+
+Then, in any winsock app that needs a POP or SMTP server (such as the Host 
+and Relay Host for Pegasus), use mail.netcom.com -- for a news (NNTP) 
+server, use netcom.com .
+
+By the way, in my Trumpet File;Setup Nameserver setting, I've been using
+
+  192.100.81.101 192.100.81.254 192.100.81.105
+
+and I get very few name lookup delays.
+
+Lee Dobbs                     Milpitas CA            Voice: 408-946-7860
+ldobbs@netcom.com                 USA                Fax:   408-262-9392
+________________________________________________________________________
+Question 3.3
+
+In article <frankDAGH97.Gu6@netcom.com> frank@netcom.com (frank) writes:
+>Hi, Slirpers:
+>
+>How do I telnet into my linux box?  I redir the port 8888 to 192.0.2.0:23
+>I am using SLiRP 0.9o.  But when I login to netcom and use
+>telnet netcom8(or whatever).netcom.com 8888, nothing happened.
+>Do I need to set my IP to 192.0.2.0 instead of 10.0.2.15?  Any help
+>will be greatly appreciated.
+>
+>frank@netcom.com
+
+
+Why don't you try redirecting it to 10.0.2.15:23  ???
+________________________________________________________________________
+
+Question 3.4
+
+What do the configuration files need to look like for linux
+for basic tcp/ip connetions to work with a slip emulator?
+
+These files are configured for netcom..but hopefully will
+serve as an example as to how to set things up....
+
+/etc/hosts ----
+127.0.0.1       localhost
+10.0.2.15       darkstar local-pc
+192.100.81.101  netcomsv netcomsv.netcom.com
+192.100.81.105  ns.netcom.com
+192.100.81.254  netcomgw netcomgw.netcom.com
+10.0.2.2	mail.netcom.com smtp-server pop-server
+10.0.2.3	netcom.com news.netcom.com nntp-server
+/etc/resolv.conf ----
+domain netcom.com
+nameserver 192.100.81.108   (Editor's note - You might want to have
+                                              several entries on this line so if one
+                                             nameserver is down, there are alternatives locally.)
+/etc/host.conf -----
+order hosts, bind
+multi on
+
+I'm not going to try and explain how to use dip here...that's a bit much.
+________________________________________________________________________
+Question 3.5
+In article <ekbondDACC0q.DFM@netcom.com>, ekbond@netcom.com (E. Kelly
+Bond) wrote:
+
+> Is it possible to send mail from my Linux box to/through Netcom
+> while connected via TIA?
+> 
+> Any help will be appreciated.
+> 
+> Kelly
+> ekbond@netcom.com
+
+Yes, I am doing it.  You have to configure your domain name to netcom.com
+and use sendmail with the smtp-only script in /usr/src/sendmail/cf, and
+all will be great.  There are readmes in the sendmail directory how to use
+m4.  It's a one liner.  Use sendmail -q to bump the queue into action when
+you connect, or as part of your ppp-on script.
+
+Oh, actually I am doing it with SLiRP, not TIA, but same thing...
+
+Cheers,
+
+-- Grant Bowman     <grantbow@netcom.com> 
+
+________________________________________________________________________
+Question 3.6
+
+In article <3vn7vg$8s@seagoon.newcastle.edu.au> you wrote:
+: Hi all!
+: 	I'm currently trying to get an xterm window from the host machine 
+: to my computer. I've tried the -X option and setting the DISPLAY 
+: environment. When I type "xterm", I just get the I/O error 32. Broken 
+: pipe or something like that on X server. Does anyone know what I'm doing 
+: wrong?
+:
+: | Edmund Lai								|
+
+Okay...lets review what you have to do.
+
+First, in the .slirprc you have something like
+
+redir X IP  (where IP is the number of the system you are typing at, ie
+             whatever your fake IP address is.  Slirp uses 10.0.2.15 
+             by default.  That is as good a choice as any unless you
+             have other reasons to change it.)
+
+Okay...next. IS YOUR X SERVER UP and ALLOWING REMOTE CONNECTIONS on
+your home system?  If you are running linux at home, you need to say
+"xhost +"  to allow all hosts to access your screen.  Note - this IS
+potentially a security problem! This opens your system wide up to 
+intrusion.  On the other hand...do people know you have X and slirp
+running?
+
+Finally, you need to telnet over to the remote host and type what
+slirp told you to type in its' log on banner.  Something like
+"setenv DISPLAY HOSTIP:offset" where HOSTIP is the host's IP number
+and offset is the X socket offset from port 6000 that slirp 
+grabbed(see below).   
+
+Why do you have to do this you might ask...why isn't this number
+you home system's IP instead?  Good question, and one I asked the
+author before I stared at the code myself, and learned about unix
+sockets;-)  What slirp does with ANY port redirection is open
+up a unix socket, and start listening for traffic on that socket.
+So when you say redir X IP, what you are saying is listen on 
+port 6000(or 6000+ some number if 6000 is busy), and any 
+connections you see on that number forward over the SLIP link
+to the IP address I gave you.  
+
+That means that you need to tell X clients to look for the X
+server at a specific machine IP address:socket number to 
+connect to your server that is on the other end of the phone 
+line!  You do this by typeing "setenv DISPLAY HOSTIP:offset"
+which is a variable, DISPLAY, that all X clients are sensitive
+too.  
+
+Notice the offset.  This might be a little confusing also.  Slirp
+tries to grab socket 6000, but if the socket is already in use, 
+it'll increment the socket it's trying to listen too until it
+finds a free one.  So you might get 6007 as an example, if 6000-6006
+are already in use.  To set the display variable correctly you need
+to set the address to HOSTIP:7.  The X client is already smart 
+enough to add the 6000 base address.  
+
+Summary.  1) Set the redir X HOMEIP in slirprc
+          2) Make sure that connecting hosts can access your server
+             by getting the security right.
+          3) Telnet to the host and do a setenv DISPLAY HOSTIP:offset
+             corresponding to the slirp banner.
+
+That should get you up and running X!
+
+Good Luck,
+
+Steve Wilson 
+
+________________________________________________________________________
+Question 3.7
+
+: What is  the new format for .slirprc commands?  What commands
+: are available on the control port? 
+
+Note that versions of SLIRP after version "O" have many changes.
+ 
+They require you to use a different, new format for [pty]exec in the
+"$HOME/.slirprc" file.  Here is the new format:
+ 
+SLIRP95c Usage: add ptyexec | ptyexec PROGRAM:[ADDRESS:]PORT
+ 
+The new formats, the use of the $HOME/.slirprc-0 file (executed _before_
+$HOME/.slirprc), and many other NEW features are clearly described in the
+docs/CONFIG file, which is included with the SLIRP95c package.
+ 
+There is a new HELP menu, with many options, here is what it looks like:
+--= SLIRP 95c help menu =--
+ 
+SLiRP command-line ready (type "help" for help).
+Valid commands:
+prompt               redir X              show X
+redir                baudrate             special addr
+control addr         host addr            add exec
+add ptyexec          add emu              shell
+debug                socket               log stats
+config               log start            dns
+help                 -h                   echo
+exec                 ptyexec              unit
+wait                 quit                 ppp
+-all                 -ac                  -am
+asyncmap             debugppp             -ip
+-mn                  -mru                 -pc
++ua                  +pap                 -pap
++chap                -chap                -vj
+-vjccomp             vj-max-slots         escape
+domain               mru                  mtu
+initiate-options     name                 user
+usehostname          remotename           auth
+proxyarp             login                lcp-echo-failure
+lcp-echo-interval    lcp-restart          lcp-max-terminate
+lcp-max-configure    lcp-max-failure      ipcp-restart
+ipcp-max-terminate   ipcp-max-configure   ipcp-max-failure
+pap-restart          pap-max-authreq      pap-timeout
+chap-restart         chap-max-challenge   chap-interval
+ipcp-accept-local    ipcp-accept-remote   bsdcomp
+-bsdcomp             papcrypt
+For more help type "help COMMAND" where command is either
+one of the above commands or a portion of a command.
+ 
+(Editors Note - This comes from the slirp .95c change log I believe)
+
+________________________________________________________________________
+Question 3.8 
+
+in article <darkmarkDC5LEK.41n@netcom.com>says
+>i'm trying to get shell via telnet on slirp, without logging in again.
+ 
+1.a) Get the file:
+ 
+    ftp://blitzen.canberra.edu.au/pub/slirp/extra/slirp.telnetd-b.tar.g
+ 
+1.b) extract and compile it like you did with Slirp
+ 
+1.c) place the binary into a directory that is in your path
+ 
+ 
+[ Note:
+[ Can anyone explain in detail what function slirp.telnetd
+[ adds to slirp? Does it provide the 'telnet protocol'?
+[ If so, what is contained in the telnet protocol - local echo?
+[ Xon/Xoff flow control?
+ 
+ 
+2) Add the following line to your .slirprc file (you may wish to pick
+another shell).  I use:
+ 
+    shell /usr/local/bin/tcsh
+ 
+ 
+3) Add a line to your hosts file so you can telnet to your shell without
+having to use the IP number, if you like.  For example, my hosts file
+includes:
+ 
+#
+# Host file for use on winsock pc running TIA or SLiRP on shell account
+#
+ 
+# -- SLIP emulator names --
+ 
+10.0.2.15       PC-name
+10.0.2.2        emulator-host
+10.0.2.2        pop-server
+10.0.2.1        shell        <<<=== Add this line here
+10.0.2.1        smtp-server
+10.0.2.1        nntp-server news-server
+ 
+(Above is just an example - you may wish to call your services by other
+names.)
+ 
+ 
+[ For you TIA users wondering how to use tia with slirp IP numbers...
+[ my .tiarc:
+[
+[-n10.0.2.2
+[-r10.0.2.15:21
+[-p10.0.2.1:25 mailit
+[-p10.0.2.1:119 nntpd.xover
+ 
+4) If running Windows, setup an icon that passess the argument "shell" to
+your favorite telnet application.  Double-clicking that icon will connect
+you to the host and run a shell program.  I use:
+ 
+     c:\winsock\ewan\ewan.exe shell
+ 
+ 
+5) Running another shell will not execute the commands in your .login
+file.  So, on your shell, move the commands alias, set, path, (everything
+non-login environment related) from .login to .cshrc (or whatever shell rc
+file you are using) so when you start up a new shell you will have things
+the way you are used to them.  You could also just put a 'source .login'
+in your .cshrc if you like.
+ 
+[ I'm don't really understand UNIX enough to know what
+[ gets passed in to child processes in UNIX -
+[ anyone what to jump in here?
+ 
+ 
+And I think you should be in business.  I hope I haven't forgotten
+anything.
+ 
+Bill                
+moseley@netcom.com  
+________________________________________________________________________
+Question 3.9
+Alex Clamann (aclamann@vcu.edu) wrote:
+: Does anyone have instructions/hints as to how to use Windows 95
+: with SLiRP?
+ 
+Works great!
+ 
+1) Install TCP/IP under network in the control panel
+2) The numbers 10.0.2.0 is the default gateway under IP settings in the
+   control panel
+3) The number of the local address is 10.0.2.115
+4) Set the DNS server to whatever slirp gives you, (the second and
+   third on netcom as the first seems to change)
+5) under the win config the very last box needs to be checked. (note:
+   this is second hand from a friend, and he can't remember what the box is
+   called. :( )
+6) create a dialup network account, (it's an option in the dialup network
+   program group)
+7) make sure to set the modem setup box and select <bring up dialog box
+   after dialing>, (that lets you log in and start slirp.
+8) then set server type to PPP
+9) use the connect button and when the dialog box comes up, type in your
+   name and password.
+10) run slirp with the -P switch (this tells slirp to use PPP)
+11) then press continue and win95 should tell you that you are connected.
+ 
+once the connection is running you can use the win/95 utils or the win/95
+version of the web browsers.  Note: Netscape 32bit is at www.netscape.com
+
+                                                    jtessin@netcom.com
+
+(Editors Note - Another VERY detailed response to this question  
+ is found below - I'd love to get feedback as to which I should 
+ keep!!!!)
+
+>Are there instructions available on how to configure win95,slirp,Free
+>Agent, and Netscape?  And if so would someone post it or its address?
+ 
+ Note:  The instructions below now accomodate multiple dial-ups by
+ localizing the IP addresses to each dial-up entry, rather than making
+ them global throughout the system.  Revisions have also been made for
+ better clarity.
+ 
+ The following are comprehensive instructions on getting Win95 to
+ network over a dial-up using SLIP/PPP, with consideration for TIA &
+ SLiRP.  These are specific to the CD release version (950r6) of Win95.
+ These assume that you have a modem, a phone line, and have an Internet
+ account with an ISP (Internet Service Provider).
+ 
+ Info needed:  Your IP address (if static IP); your ISP's name, domain
+ names, and IP addresses.
+ 
+ Components needed:  Dial-Up Networking; DSCRIPT; TCP/IP.
+ 
+ **Always select OK to close a settings screen and not the Close (X)
+   button, or otherwise the changes you made will be ignored.
+
+ ----------
+ 
+ ADDING NEEDED COMPONENTS:
+ 
+ To add Dial-Up Networking,
+    Open Start | Settings | Control Panel | Network | Add | Adapter |
+       Microsoft | Dial-Up Adapter.  Click OK.
+    The Dial-Up Adapter should now be present in the Network window.
+       Win95 will ask to restart system, don't restart just yet.
+    Delete all other entries in the window (aside from the Dial-Up
+       Adapter), by selecting them and clicking Remove.
+ 
+ To add DSCRIPT,
+    Open Start | Settings | Control Panel | Add/Remove Programs |
+       Windows Setup | Have Disk.
+    Enter [CD drive]:\ADMIN\APPTOOLS\DSCRIPT and press OK.
+    [Note: DSCRIPT may not be present in the Win95 floppy disk version.]
+ 
+ To add TCP/IP,
+    Open Start | Settings | Control Panel | Network | Add | Protocol |
+       Add | Microsoft | TCP/IP.  Click OK.
+    You should now have the Dial-Up Adapter and TCP/IP icons in the
+       Network window.  Win95 will ask to restart system.  Press No
+       to keep on going.
+    Select TCP/IP, and click on 'Properties'.  Select 'Gateway' tab.
+       Enter  1.0.0.1, and press the Add button.
+    Press OK's until you've closed the Network screen.
+ 
+    After rebuilding its driver database, Win95 will again prompt you to
+    restart the system.  Select No to keep on going.
+ 
+----------
+ 
+ MAKING A DIAL-UP ENTRY:
+ 
+ Open Start | Programs | Accessories | Dial-Up Networking.  Win95 will
+    activate the Make New Connection wizard.  Press Cancel for now.
+ Select Connections (in the Dial-Up Networking folder menu) | Settings.
+    Enable 'Redial' (retry = 99, 0 min 1 sec between retries).
+    Select 'Don't prompt to use Dial-Up Networking'.  Press OK.
+ 
+ Double-click on the Make New Connection icon.
+ Enter name of the ISP for the top box (ex: Eskimo North).
+ Select your modem from the list, or let Win95 autoselect your modem
+    (if modem is not already set up).
+ Select 'Configure' (modem)
+    [General]
+       Select max speed (I use 57600 for 28.8K, for typical 2:1
+          compression ratio).  Click OK.
+    [Connection]
+       Enable 'Cancel the call if not connected within _60_ secs'
+       Enable 'Disconnect a call if idle for more than _15_ mins'
+ Click Next; enter the ISP's telephone access number when prompted
+    (no area code, unless it is a long-distance call.)
+ Click Next; enter a name for the dial-up entry (ex: Eskimo).
+ Click Finish.  A connect icon for the ISP will appear in the folder.
+ 
+ Right-click on the connect icon.  Select Properties | Server Type.
+    Select SLIP, CSLIP, or PPP (use this for SLiRP or TIA 2.x) from
+       the drop-down menu.
+    Disable 'Log on to network'.
+    Disable 'NetBEUI' and 'IPX/SPX Compatible'.
+       [If you select SLIP or CSLIP, these will already be greyed out.]
+    Click on 'TCP/IP Settings'.
+       Select 'Specify name server address'.
+          Enter the IP address(es) of the various domains of the ISP.
+          (Ex: for Eskimo, enter 204.122.16.13 for main server,
+          204.122.16.40 for tia server)
+       If dynamic IP address, select 'Server assigned IP address'.
+       If static IP address, select 'Specify an IP address' and enter
+          your IP address, as provided to you by your ISP.
+ 
+       If TIA or SLiRP, select 'Specify an IP address' and enter
+          192.0.2.1 (anything you want, really) for IP address.
+ 
+ You can drag the ISP icon you've just made out onto the desktop for
+ quicker access.  Repeat this section for any additional dial-up entry
+ you want to create.
+ 
+ ----------
+ 
+ MAKING A LOGIN SCRIPT:
+ 
+ You've made a dialing connection icon for the ISP, but you need a
+ script to get past the login and start SLIP/PPP/TIA.  DSCRIPT will
+ handle this chore.
+ 
+ Open Start | Programs | Accessories | Dial-Up Scripting Tool
+ 
+ The dialing connection you've just made should be presented as an entry
+ inside the Connections window.  Since it's the only entry, it should
+ already be highlighted.  Click on 'Browse', and select one of the
+ sample script (SCP) files for modification.  Then click on 'Edit' to
+ modify the file to fit your ISP login.  Below is a sample script for
+ Eskimo North:
+ 
+ ; Eskimo North login script
+ proc main
+    transmit "^M"
+    waitfor "Selection ==>"
+    transmit "4^M"
+    waitfor "login:"
+    transmit "YourName^M"   ; replace with your login name
+    waitfor "Password:"
+    transmit "YourPasswd^M" ; replace with your password
+    waitfor "bash$"         ; replace with your prompt
+    transmit "tia -ppp^M"   ; use this for TIA 2.x
+    ;transmit "slirp -b 57600 -P^M"  ; use this for SLiRP
+    ;set ipaddr getip 2     ; use this for dynamic IP address
+ endproc
+ 
+ Save the script.
+ Enable 'Start terminal screen minimized'.
+   [For script debugging purposes, you can elect to disable the 'Start
+   terminal screen minimized' option and/or enable the 'Step through
+   Script' option.]
+ Restart Win95.
+ 
+ Note:  Accessing the SCRIPTER.HLP file may be problematic, as it has no
+ accompanying .CNT (contents listing) file.  I wasn't able to access its
+ Topics List, which means no access to the command syntax listing.  I
+ ran the help file through an ASCII filter, and reconstructed the syntax
+ listing after some reformatting.  If there is sufficient interest, I'll
+ repost it as an addendum.  [The Plus! pack's "Internet Option" has the
+ identical Dial-Up Scripting Tool as included in the base Win95 CD, but
+ it has an accompanying SCRIPT.DOC which has the command syntax in it.]
+ 
+ ----------
+ 
+ TESTING THE SETUP:
+ 
+ Double-click on the dialing-connection icon for the ISP, and click
+ Connect.  (You don't have to enter your name/passwd, since you've
+ already hardcoded it into the script file.  Be aware, however, that the
+ scripts are saved in plain ASCII which may pose a security problem for
+ multi-user setups).  If everything goes smoothly, you will get a
+ Connect message.  (I've noted that with SLiRP, it takes as long as half
+ a minute for the TCP/IP connect to be made after the SLiRP command is
+ given to the host shell.)
+ 
+ After the Connect message, minimize the window onto the TaskBar, and
+ open up a DOS box.  Enter 'telnet [ISP domain name]' (ex: telnet
+ eskimo.com) to connect to your ISP.  If telnet is successful, then the
+ setup is good, and you are in business.
+ 
+ Win95 also has some other command-line TCP/IP utils, the most important
+ of which is FTP.EXE.  Between) telnet and ftp, you have the tools to
+ acquire other winsock apps from the net to add to your stable.
+ 
+ hpham@eskimo.com (Hoang Pham) 
+
+________________________________________________________________________
+
+
+4.0 Emulator Performance
+
+Question 4.1
+
+SLiRP has become stable and the lock-up bug was finally fixed(?).
+I think it's time for new benchmark test on TIA and SLiRP. 
+
+(*** Well, seems like I will have to do another test in 2 weeks. 
+TIA 2.0 beta will be released in next month. I just got new TIA news.)
+
+Anyway,
+
+I performed a small benchmark test using ws_ftp. The method used is mostly
+the same as the previous test I did and posted here few month ago.
+
+I transferred file between UNIX host and local PC over serial line three
+times in each direction and averaged the speed (in Kbps).
+
+This time I could use the same Trumpet setting for both TIA and SLiRP,
+which means you can compare data of the two directly. Also, I used
+both compressed and non-compressed files in the tests.
+
+Let's show you the result first.
+
+
+WS_FTP.EXE (150944 byte, a binary executable)
+=============================================
+	TIA	SLiRP
+	SLIP	SLIP	CSLIP	PPP
+---------------------------------------------
+Downld	18.06	17.31	18.53	18.45 (Kbps) 
+Upload	18.94	18.88	19.35	19.30
+=============================================
+
+WS_FTP.ZIP (117641 byte, ZIP compressed)
+=============================================
+	TIA	SLiRP
+	SLIP	SLIP	CSLIP	PPP
+---------------------------------------------
+Downld	15.87	14.97	16.24	16.14 (Kbps)
+Upload	16.36	16.32	16.70	16.66
+=============================================
+
+What do you think? It's interesting, isn't it?
+
+* Actually, the result is not much different from the previous test.
+In the previous test, I used MTU of 552 for Slirp and I thought it
+made Slirp slower than TIA. However, Slirp is still slower than the
+TIA in SLIP. Slirp gave me *really* good result in CSLIP and PPP. 
+CSLIP is slightly faster than PPP but I think the difference has 
+become small. (Acutually, I lost the old result. ^^; Am I telling 
+you the truth?)
+
+* As a result of tcp_input.c fix, Slirp now works even if you don't
+use Passive mode in ws_ftp. However, you should always get faster
+transfer if you use Passive mode. This applies to TIA, too.  
+
+ 
+#####
+Here's hardware and software information:
+
+UNIX  -- SparcSun-4/280. SunOS-4.1.3
+PC    -- Toshiba T3400, i486SX-33MHz, 4MBram, Windows for Workgroups.
+Modem -- US Robotics WorldPort 14.4K PCMCIA Fax/Modem.
+
+WS-FTP version 95.06.11
+	Recv Bytes 4096
+	Send Bytes 1500
+	*Passive Mode* is used in all transferres.
+
+Trumpet Winsock version 2.1b 
+	MTU 1500, RWIN 4096, MSS 1460.
+	Baudrate 38400
+
+TIA version 1.04c (beta)
+
+Slirp version 0.9o (tcp_input.c fixed)
+			[.slirprc]
+	SLIP		CSLIP		PPP
+	************** 	**************	*****************
+	Baudrate 38400	Baudrate 38400	Baudrate 38400
+	mtu 1500	compress	ppp
+	mru 1500	mtu 1500	mtu 1500
+			mru 1500	mru 1500
+					asyncmap 00000000
+	**************	**************	*****************
+
+
+*** All Data ***
+
+## TIA ##
+[SLIP]	ws-ftp.exe			ws-ftp.zip
+--------------------------------------	------------------------------
+	Down		Up		Down		Up
+	(Sec)	(Kbps)	(Sec)	(Kbps)	(Sec)	(Kbps)	(Sec)	(Kbps)  
+--------------------------------------	------------------------------
+1.	81.8	18.08	78.0	18.95	72.6	15.88	70.4	16.37
+2.	82.0	18.04	78.1	18.94	72.9	15.82	70.5	16.35
+3.	81.8	18.08	78.2	18.92	72.5	15.90	70.4	16.37
+--------------------------------------  ------------------------------
+Ave.	81.9	18.06	78.1	18.94	72.7	15.87	70.4	16.36
+--------------------------------------	------------------------------
+
+## SLiRP ##
+[SLIP]	ws-ftp.exe			ws-ftp.zip
+--------------------------------------	------------------------------
+	Down		Up		Down		Up
+	(Sec)	(Kbps)	(Sec)	(Kbps)	(Sec)	(Kbps)	(Sec)	(Kbps)  
+--------------------------------------	------------------------------
+1.	85.6	17.28	78.4	18.88	77.3	14.92	70.7	16.31
+2.	85.5	17.31	78.5	18.84	77.0	14.98	70.6	16.32
+3.	85.4	17.33	78.2	18.91	76.8	15.02	70.6	16.32
+--------------------------------------  ------------------------------
+Ave.	85.5	17.31	78.4	18.88	77.0	14.97	70.6	16.32
+--------------------------------------	------------------------------
+
+
+## SLiRP ##
+[CSLIP]	ws-ftp.exe			ws-ftp.zip
+--------------------------------------	------------------------------
+	Down		Up		Down		Up
+	(Sec)	(Kbps)	(Sec)	(Kbps)	(Sec)	(Kbps)	(Sec)	(Kbps)  
+--------------------------------------	------------------------------
+1.	79.8	18.53	76.4	19.36	71.0	16.24	69.0	16.70
+2.	79.8	18.53	76.5	19.33	71.0	16.24	69.0	16.70
+3.	79.8	18.53	76.4	19.36	71.0	16.24	69.0	16.70
+--------------------------------------  ------------------------------
+Ave.	79.8	18.53	76.4	19.35	71.0	16.24	69.0	16.70
+--------------------------------------	------------------------------
+
+
+## SLiRP ##
+[PPP]	ws-ftp.exe			ws-ftp.zip
+--------------------------------------	------------------------------
+	Down		Up		Down		Up
+	(Sec)	(Kbps)	(Sec)	(Kbps)	(Sec)	(Kbps)	(Sec)	(Kbps)  
+--------------------------------------	------------------------------
+1.	80.1	18.46	76.6	19.30	71.5	16.12	69.2	16.66
+2.	80.3	18.42	76.6	19.30	71.4	16.15	69.2	16.66
+3.	80.1	18.46	76.7	19.29	71.3	16.16	69.2	16.66
+--------------------------------------  ------------------------------
+Ave.	80.2	18.45	76.6	19.30	71.4	16.14	69.2	16.66
+--------------------------------------	------------------------------
+
+That's all. (Hope I didn't make any stupid mistake.)
+
+Thanks.
+
+---
+
+Masa. <msato@calstatela.edu>
+
+[Editors' note:  I think this one gets the best post of the week award!]
+----------------------------------------------------------------------------
+
+5.0 Miscellaneous Problems/Solutions
+
+Question 5.1
+>                           LATEST INFORMATION
+>                  --------------------------------------
+>
+>  *  (21/6/94) I think I finally fixed the "locking-up" problem. Edit the
+>    file tcp_input.c and uncomment the lines:
+>    /* if (so->so_snd.sb_cc)
+>    * (void) tcp_output(tp);
+>    */
+>    This means you can use a low RWIN again, and still have it work (I
+>    hope).
+>  *  (5/6/94) Get version 0.9o, it should fix the nasty SunOS problem, as
+>    well as others. This will be the last release for around a month or
+>    two (provided I find no major bugs (again)), since a) I have tests
+>    coming up, and b) I'm planning big changes/additions to slirp for the
+>    next release (It'll probably be a BETA release, finally).
+>
+>  [Back To SLiRP Home Page] [Features] [danjo@blitzen.canberra.edu.au]
+>
+>                Copyright ©1995 Phase One WWW Publishing
+
+I tried out the code change and it seems to be working fine for me.
+
+I am now able to reduce my RWIN in trumpet back to 4 times my MTU and I have no lockups.
+
+    o      _____         ||Jose Barandiaran | |joseb@twisto.compaq.com  |
+----------------------------------------------------------------------------
+Question 5.2
+
+>sterns@rahul.net (Steven Stern) wrote:
+>Hi,
+>    I'm running Win95 (build 484) and just tried to run the 32 bit
+>version of Netscape with no luck. I can't get DNS lookup to work.
+>
+>Is this combination possible or will it not work because Trumpet is
+>not a 32 bit application ?
+>
+>BTW the 16 bit version works just fine !
+>
+>Steve
+>                                                               ~~~
+>                                                              (o o)
+> ----------------------------------------------------------ooO--U--Ooo-----
+> Steven Stern           email: sterns@rahul.net     
+
+
+It seems that the 32-bit version of Netscape cannot communicate 
+with a 16-bit TCP/IP stack.  However, you don't need to use 
+Trumpet anymore.  Just use SLiRP with the -P or ppp option (for 
+Point-to-Point Protocol).  On the Windows 95 end, you'll need 
+to go into Dial-Up Networking in My Computer and define dialer 
+"objects" for each of the numbers you wish to call on your 
+server.  The default protocol is PPP and is set under Server 
+Type.  You'll then need to set up a dummy IP address in either 
+Network under Control Panel or on the object itself, if your 
+build of Windows 95 supports that (which I think 484 does).  
+There are a few other things, such as Name Servers and 
+Gateways, but since you've already set up Trumpet, you'll know 
+what to put in there.  You'll want to specify that Windows 95 
+bring up the terminal window after dialing so that you can 
+enter your login information.  This can be done in Server Type 
+as well.  Don't worry about the login name and password in the 
+dialer object; it can't be resolved anyway and you'll connect 
+just fine when you enter it in your terminal window.  After 
+entering your user ID and password and finally the SLiRP 
+command line, you simply press F7 (Continue) and you're all 
+set.  All of your winsock apps will work, 32-bit and 16-bit.
+
+If you have any trouble setting this up, let me know. Maybe I 
+can help.  Just short on time at the moment.  
+mailto:davidb@mordor.com
+----------------------------------------------------------------------------
+Question 5.3
+
+whoa@netcom.com (arlene agcongay) wrote:
+>
+>hi, i just got SLiRP working for me the other day, but i have a
+>question.  I'm using OS/2 Warp with SLIRP, and when i start it up,
+>it tells me that my baud rate is 1200.  I would like to configure
+>this part to a higher baud rate, but i don't know which file to
+>edit.  What i've been doing is opening up another comm software like
+>ZOC and have it initialize my modem to 38400.  but there has to be
+>an easier way!  i'm a newbie to this, so please help me.. =)
+>
+>thanks in advance!!
+>
+>
+>-arlene
+>
+>
+
+slirp -b 38400  will tell SLiRP to send and receive data from 
+your provider's modem at 38,400 bits per second.  To receive 
+the data at the fastest possible rate, you'll need to call a 
+number that supports the highest transmission rate possible 
+with your modem and be sure you are connecting at that speed.  
+What concerns me is that SLiRP defaults to 9600 "baud" and 
+should not be reporting 1200 unless you have explicitly 
+requested it with the -b switch. Maybe you are misreading one 
+of the other parameters, such as MTU?
+
+db
+
+----------------------------------------------------------------------------
+Qeustion 5.4
+
+[ Editors' note: I screwed up the request below...so added the one line
+  to get the context of the original question back.. Sorry 'bout that.]
+>How does one get to a 
+>unix shell using slirp.telnetd .. no one can answer this for me, it seems 
+>and I haven't been able to find any documentation on the subject.. it's 
+>rather frustrating. Thanks. E-Mail Please.
+>
+>--
+> ______  
+>( ____ \  rampage@ccnet.com	http://www.ccnet.com/~rampage	net-geek
+
+	Simple, in your .slirprc you have a line such as is mine for tcsh:
+		shell /usr/local/bin/tcsh
+Then (if 10.0.2.0 is your SPECIAL address as it is for me) you telnet from your
+local machine to 10.0.2.1 to get a 'shell' on your remote machine.  In my case
+I put a lines in /etc/hosts such as:
+		10.0.2.0 slirp
+		10.0.2.1 remote
+so that I can 'telnet remote' to get a shell or 'telnet slirp' to talk to
+SLiRP's command line.
+
+rdt
+                                                   mailto:rdt@realm.net    
+                                               or  mailto:rdt@kaiwan.com   
+----------------------------------------------------------------------------
+Question 5.5
+
+On Sun, 25 Jun 1995 08:34:57 GMT Steven Stern (sterns@rahul.net) wrote in alt.dcom.slip-emulators:
+: I'm running Win95 CSLIP with Slirp at the other end. After I start
+: Slirp I get the following msg:
+
+: SLiRP Ready ... (autodetect SLIP/CSLIP, MTU 552, 9600 baud)
+
+: I'm using a 14.4 modem. Does the message above really says I'm only
+: connected at 9600 ?
+
+: Before Win95 Cslip, I always got 14.4 connections with Trumpet !
+
+: Please help !
+
+You need to specify the baud rate on the command you use to start slirp,
+like: 
+      slirp -b 14400 -c
+
+Ahmad
+--
+Ahmad Al-Nusif            | E-Mail: morpheus@kuwait.net                      |
+-----------------------------------------------------------------------------
+Question 5.6
+
+stew1117@netcom.com (stewart coulter) wrote:
+>Hello, I am using Slirp version O, everything is running fine except the 
+>news.  I have a netcom account and was told I need the file NNTPD, where 
+>can I find this file and what type configuring do I have to do to the 
+>slirp O program?  Please respond via email
+
+>From a directory in your path (probably either your home directory or ~/bin), 
+do
+
+  ln -s ~seligman/bin/nntpd
+
+Or, if you want your own copy (just in case), do
+
+  cp -p ~seligman/bin/nntpd .
+
+This version, written by Scott Seligman, supports XOVER. The TIA version will 
+also work with either TIA or Slirp. Find it at
+
+  ~barryn/pub/nntpd
+
+These are on Netcom, of course, since they're only needed to emulate a normal 
+NNTP server with Netcom's disk-based equivalent.
+
+To use this with Slirp, add the following line to your .slirprc file:
+
+  add exec nntpd 10.0.2.1:119
+
+unless you use the TIA-style addresses, in which case you'd add
+
+  add exec nntpd 192.0.2.3:119
+
+Lee Dobbs                     Milpitas CA            Voice: 408-946-7860
+ldobbs@netcom.com                 USA                Fax:   408-262-9392
+-----------------------------------------------------------------------------
+Question 5.7
+D. Henry (marbling@apk.net) wrote:
+: In article <3sj8cs$j3e@metz.une.edu.au>, jzhou1@metz.une.edu.au (JUN ZHOU) says:
+: >
+: >Hello,
+: >
+: >I am trying to run Netscape and Eudora on a PC with a modem. I have installed
+: >the Trumpet winsock and can loging manually from TCPMAN widows. However, when 
+: >I try to run the wisock applications, the Tcpman is lunched and minimized but
+: >the Netscape windows never pop up.
+: >
+: >Any help is highly appreciated
+
+
+He-he. I used to make the same mistake when I just installed Trumpet 
+Winsock. Here's the catch. If you select 'Manual Login' option from the 
+Trumpet Winsock's Dialler menu, SLIP is automatically disabled. After you 
+manually log in and start your SLIP emulation, don't forget to press the 
+'ESC' key. It will enable SLIP, and Trumpet Winsock will start talking 
+to your SLIP emulator. If you don't do so, Netscape window will never pop 
+up...
+I hope this helps.
+
+Regards,
+Stan
+
+----------------------------------------------------------------------------
+Question 5.8
+
+In article <3t278g$46r@newsbf02.news.aol.com>,
+rmpshaker2@aol.com (RmpShaker2) wrote:
+>Hey guys, When I setup my network settings, my only server type is PPP. I
+>don't have a PPP connection, I have a slip.  I tried configuring the damn
+>thing, but I found NO option for slip anywheres. I went through all the
+>help and found jack.  Does anyone know how to setup a SLIP?
+>
+>Thanks, Chris
+
+Unfortunately Win95 does not automatically set-up SLIP protocol, but it's 
+quite easy.
+
+Go into control panel, then add/remove software, then Windows Setup, the Have 
+disk, now browse for a file named RNAPLUS.INF, it's on the cd, in think in 
+admin\apptools\slip, and that's it.  Now when you set up server you should 
+have cslip and slip options
+
+----------------------------------------------------------------------------
+Question 5.9
+browe@netcom.com (Bill Rowe) wrote:
+>In article <stevewDB8u3p.FIv@netcom.com>, stevew@netcom.com (Steve Wilson)
+>wrote:
+>>When you start up a shell, you tie-up a certain amount of memory
+>>with local defines...like the path you use to search for commands,
+>>any special "environment variables," etc.  If you fork off another
+>>shell via telnetd, it will inherit this same environment...what
+>>Lee is saying is that you probably just get a link to this stuff
+>>instead of taking up X amount of more memory...
+>
+>Are you saying with telnetd the path to my home directory is not
+>available? If it is available, how could it not be taking memory? If it
+>isn't available, this seems to me a good reason not to use telnetd to
+>access my shell account. 
+>
+>Usually, if I telnet to my shell it is because I want to manipulate one or
+>more files there. Lack of access variables which are defined at login such
+>as $PATH would seem to make it significantly more difficult to do the
+>usual things with a shell account.
+
+All the environment variables that were set by your login shell process 
+*are* available to any subprocess. If the subprocess happens to be another 
+shell, any reference to an unmodified environment variable just points back 
+to the memory block attached to your login process. So, things like your 
+path, term, prompt, shell, etc., don't have to be recopied -- they're 
+already available.
+
+The situation is different, however, when you start up a shell from an 
+intermediate process like telnetd. telnetd doesn't pass the environment 
+variables to the shell, so it starts up with just the default subshell 
+parameters. You have to tell it to do something extra. If your shell is one 
+of the csh derivatives, you need to tell it to execute your .login file in 
+addition to the usual .cshrc file. One way to do this is 
+
+  exec csh -l
+
+which replaces the original telnet shell process with another one, but this 
+time reading the .login file first. There are equivalents for the Bourne 
+derivatives so that it executes your .profile first, but I don't remember 
+what those are right now.
+
+By the way, the shell variables are only part of the environment memory 
+usage. There is some environment memory dedicated by your host to keep track 
+of your login process and all your subprocesses. This includes space for:
+
+ All the open files
+ Access rights to files and processes
+ The working directory
+ The file creation mask
+ Values of resource limits
+ Signals to be ignored by the parent
+ Signals not to be ignored by the parent
+
+That's why it's still better for the host if you use a subshell through 
+telnetd and then set your PATH, etc., than if you start a completely new 
+login session.
+
+Does this help? Are we having fun yet? :)
+
+Lee Dobbs                     Milpitas CA            Voice: 408-946-7860
+ldobbs@netcom.com                 USA                Fax:   408-262-9392
+----------------------------------------------------------------------------
+Question 5.10
+wmcbrine@clark.net (William McBrine):
+> FTP-PM never connects when I use it under SLiRP. Pretty much everything 
+> else works fine, including FTP and NcFTP, except of course ping. What's 
+> the problem, and is there a fix?
+
+Well... You actually stated the problem yourself. Ping soesn't work,
+and FTPPM uses PING. You can tell the IAK that PING is not available
+by remarking the line starting with "icmp" in the file "protocol"
+thats the fix).
+
+/Jonas
+Jonas Eckerman                    FSDB
+jpe@algonet.se    www.algonet.se/~jpe/
+
+----------------------------------------------------------------------------
+Question 5.11
+
+Editors' Note:  This question is slightly out of date.  Tia 2.0 is
+available now...but the discussion is still relevant.
+
+In article <DBDL0D.Ltu@dorsai.org>, Mike Russo <stardate@dorsai.org> wrote:
+>At least, that's how I got TIA to work. I hope either TIA 2.0 or the 
+>next SLiRP will support this protocol, along with PPP (and maybe automatic 
+>port redirection? in my dreams?) =)
+
+PPP is in TIA 2.0 (as is CSLIP).  It is working even as I type this,
+but we've not released TIA 2.0 yet, so I can't say more at this time.
+
+The others are tough nuts to crack, so let me address them one at a
+time.
+
+The ICMP protocol is simple and easily implemented.  However, there is
+one minor problem (or major depending on who you are): root access.
+ping must be run by root to work (or be setuid uid 0).  TIA or SLiRP
+would need to be installed setuid, which violates one of the prime
+assumptions that at least TIA has: No extra ordinary privs should be
+required to use TIA.  So ICMP could be implemented for the link, but
+not forwarded to other machines.  TIA 1.x doesn't choose to do this.
+TIA 2.0 likely won't either.  Creative solutions to this problem may
+be possible, but I've not had time to fully investigate my ideas, so
+I'll not speculate on them just now.
+
+Automatic port redirection is also hard.  When the TIA client[*] has a
+program that wants to listen on a port, nothing happens over the wire.
+Sure, buffer space gets allocated, the TCP stack's internal data
+structures are setup, but no packets are sent over the link.  Since no
+data flows accross the link, TIA (and SLiRP) have no way of knowing
+that you desire to have a server or do port redirection.  Also, if TIA
+or SLiRP were to try to do this, how could it inform you of the ports
+that it chose for the servers you wish to run?  How would you know you
+needed to connect to port 8456 to connect to your FTP server?  That's
+why you need to tell TIA (and SLiRP) how to redirect the ports.
+
+I wish I could have told you that TIA 2.0 solves all the hard problems
+that exist in your dream product, but I can't because some of them are
+very hard nuts to crack.
+
+[*] A TIA client is the machine at the end of the point to point link
+    that isn't running TIA.
+
+Warner Losh		"VMS Forever"		home: imp@village.org
+Cyberspace Development, Inc			work: imp@marketplace.com
+----------------------------------------------------------------------------
+Question 5.12
+
+In article <3tqam6$lsv$1@mhafm.production.compuserve.com>, Jeff
+Morganstern <102174.225@CompuServe.COM> wrote:
+
+> Can someone explain to me why (from an annex type server) I can use 
+> rlogin to my unix account and slirp works fine, but if I telnet 
+> there, it does not?  I'm able to get into my (free but far away) 
+> unix account through a local gopher server, but it can only telnet 
+> there.  In order to use the rlogin protocol, I need to dial up 
+> directly (expensive).  Is there any way around this?
+> 
+> Thanks.
+> 
+> Jeff
+
+The reason is that rlogin is a much simpler program than telnet,
+and is therefore more "transparent" in terms of not mucking about with
+the characters that go through.
+
+For SLiRP to work, you need a relatively "clean" 8-bit connection.
+Telnet may do any or all of the following.
+
+1. Strip out the eighth bit, leaving a 7-bit link.
+2. Intercept certain characters, and translate them into telnet
+   escape sequences.
+3. Break the link if it receives certain characters.
+
+That is not to say that it is impossible to get telnet to work.
+Depending on the version of telnet you may be able to get an eightbit
+link by either specifying it as an option (telnet -8), or by careful
+settings on the machine you are telnetting from, for example,
+
+stty -parenb                ; no parity, 8-bit characters
+stty crtscts                ; hardware flow-control
+stty -ixon                  ; no XON
+stty -istrip                ; don't strip off eighth bit
+                            ; what else?? mdmbuf?
+
+You may also need to use PPP so that you can "escape" the characters
+that would telnet would intercept.
+
+There may be other things that need to be done.  I've been able to get
+a connection established with slirp through a telnet link, but have not
+gotten it to work satisfactorily, whereas rlogin works fine.  Your results
+may differ.
+
+---------------------------------------------------------------------
+Question 5.13
+
+In article <1995Jul13.110622@acad.drake.edu>, jms015@acad.drake.edu
+(Pilfered Publishing TM) wrote:
+
+> I login with ZTerm and quit without hanging up and then start InterSLIP
+> on my Mac.  I load up telnet 2.6 and try the default as stated in the Home
+> page "10.0.2.0".
+
+
+I was never able to get the special "telnet 10.0.2.0" to work form my mac
+using interslip, but it works using macppp.  At any rate, all the other
+internet functions worked fine with both setups, although I highly
+recommend macppp, as it is much faster.
+
+-- 
+Marshall Levin <levin@cobalt.middlebury.edu>
+
+
+-------------------------------------------------------------------
+Question 5.14
+
+Daniel Ptacnik - BBMD/F94 (dptacnik@acs.ryerson.ca) wrote:
+:
+: I just got slirp to work properly. But I don't know what my pop mail (smtp)
+: server is, is there a unix command that can tell you this info. Or 
+: another other way of determining this. Any help is gladly appreciated. 
+: Everthing else works fine like netscape, ftp, and irc. BTW I am using 
+: slirp v.9o. Thanx again 
+:
+
+First, are you sure that your service provider supports POP at all? The 
+POP server would have to run on the same machine as your mailbox in order 
+to work (not quite true, it could run on a machine that NFS mounts your 
+mailboxes too). Since your email address is: dptacnik@acs.ryerson.ca
+you would find out where your mail is delivered by looking for the DNS MX 
+record for that address: dig acs.ryerson.ca mx
+
+	;; ANSWERS:
+	acs.ryerson.ca. 843     MX      10 hopper.acs.ryerson.ca.
+
+Next, find out if there is a POP server running on this host by telneting 
+to port 110 (POP3) or port 109 (POP2) and see what you get:
+
+	telnet hopper.acs.ryerson.ca 110
+	Trying 141.117.101.8...
+	Connected to hopper.acs.ryerson.ca.
+	Escape character is '^]'.
+	+OK hopper.acs.ryerson.ca POP3 3.3(18) w/IMAP2 client (Comments to 
+	MRC@CAC.Washington.EDU) at Thu, 13 Jul 1995 15:10:16 -0400 (EDT)
+
+You're in luck, your MX host has a POP3 server running (looks like the 
+POP server that comes with Pine, since it mentions IMAP too). Close this 
+connection by pressing control-backbracket and entering "close" at the 
+telnet prompt, don't just break the connection, it isn't nice.
+
+Now you are ready to enter this information into your POP client:
+
+	POP host: hopper.acs.ryerson.ca
+	SMTP host: hopper.acs.ryerson.ca
+
+Have fun.
+
+--
+| John Lucas                          jlucas@uvi.edu                 |
+
+

@@ -1,0 +1,998 @@
+.TH SLIRP 1 "9 Jan 1996" "Version 1.0b"
+.\" Start displayed text macro
+.de DS
+
+.nf
+.na
+..
+.\" End displayed text macro
+.de DE
+.ad
+.fi
+
+..
+.SH NAME
+slirp \- TCP/IP emulator
+.SH SYNOPSIS
+slirp [options|commands]
+.br
+slirp help
+.br
+slirp "help \fIcmd\fP"
+.SH DESCRIPTION
+Slirp is a TCP/IP emulator which turns an ordinary shell account into
+a (C)SLIP/PPP account. This allows shell users to use all the funky
+Internet applications like Netscape, Mosaic, CUSeeMe, etc.
+.PP
+Slirp is copyright (c) 1995 Danny Gasparovski. All rights reserved.
+See the section COPYRIGHT for details.
+.PP
+This manpage is organized as follows. First, basic usage is described
+very briefly. This is followed by details of configuration files,
+commands, and command-line options. Several sections discussing
+technical issues (special addresses, port redirection, baudrate
+setting) are next, followed by answers to frequently-asked questions
+and common problems. Contact information, acknowledgements and the
+copyright notice are at the end.
+.PP
+Please read this manpage thoroughly before reporting problems!
+.SH USAGE
+To run Slirp, simply type:
+.DS
+    slirp
+.DE
+(or whatever the full path to Slirp is). That's it. Now you activate
+your SLIP/PPP software, and start your applications.
+.PP
+All you have to remember is this: Once you run Slirp, your shell
+account now looks exactly like a SLIP/PPP account (with some
+limitations of course). Any documentation that you have telling you
+how to connect to a SLIP/PPP account is completely valid for Slirp as
+well.
+.PP
+To quit Slirp you simply kill your SLIP/PPP software and type five 0's
+(zeroes), with a 1 second gap between each zero. Slirp will then exit
+and you will be back at your shell prompt.
+.PP
+You can also "disconnect" Slirp by typing five 1's (one's), with a 1
+second gap between each. This will disconnect Slirp from your shell's
+terminal and put Slirp in the background. Later, you can type
+.DS
+    slirp -l 0
+.DE
+to "reconnect" Slirp again.
+.PP
+Quick note for PDA users:  If you set SLIRP_TTY to the tty connected
+to your PDA (Palm, POSE emulator, etc.), Slirp will use that tty for
+communication.  You can use PPP without full masquerading, although
+you will be subject to the standard Slirp constraints.  You may need
+to experiment to find the correct baud rate.  Start with 19200 for 
+Palms.  If Slirp was not compiled with DO_CFSETSPEED, you'll need to
+set the speed on the tty manually.  Use an appropriate variant of 
+"stty 19200 < /dev/pilot" after starting slirp.
+.SH "CONFIGURING SLIRP"
+.I Slirp
+can be configured in 3 different ways: the command line, the
+configuration files, and "on-the-fly" configuration by telnet-ing to
+10.0.2.0 and entering the commands there (see "SPECIAL ADDRESSES,"
+below).
+.PP
+The configuration file is located in your home directory (~) and is called
+".slirprc", hence the path to your configuration file is "~/.slirprc".
+.PP
+Options which can appear in a configuration file can also be given on the
+command line.  E.g., If your .slirprc file looks like the following:
+.DS
+    redir 5022 21
+    redir X
+.DE
+you can achieve the same thing by running Slirp as:
+.DS
+    slirp "redir 5022 21" "redir X"
+.DE
+(Notice the quotes, they ARE significant).  The reverse is also true.  E.g.,
+if you run slirp as:
+.DS
+    slirp -P -b 14400
+.DE
+you can create your .slirprc file too look like the following:
+.DS
+    -P
+    -b 14400
+.DE
+(Notice that only ONE command per line is allowed in configuration files).
+The 2 types of options can also be mixed. For example:
+.DS
+    In .slirprc:
+        -P
+        -b 14400
+        redir 5022 21
+
+    Command line:
+        slirp -P -b 14400 "redir 5022 21"
+.DE
+Note that on the command line, any command/option that does not begin
+with a '-' or '+', and has spaces in it, MUST be enclosed in quotes.
+E.g., The following are all legal:
+.DS
+    slirp -P "redir udp 5022 25" -vj -b 14400
+    slirp "ppp" "baudrate 14400"
+    slirp ppp "baudrate 14400"
+.DE
+(Notice that even though "ppp" does not begin with a '-' or '+', it
+does not need to be enclosed in quotes because it has no spaces in it)
+.PP
+The following are NOT legal:
+.DS
+    slirp baudrate 14400
+    slirp "-b 14400"
+.DE
+(Because "-b" starts with a '-' you must NOT enclose it in quotes.)
+Easy, eh?
+.PP
+Note: Whenever Slirp expects an IP address as an argument (E.g., in
+the command "redir") and the IP address argument is not given, then
+the default used is different depending on where the command appeared;
+if it was in ~/.slirprc then the default is 10.0.2.15; if it was in a
+telnet 10.0.2.0, then the IP address used is the IP address from where
+the telnet 10.0.2.0 connection was made. For example, if you have a
+LAN at home and telnet to 10.0.2.0 from one of the hosts and issue a
+"redir" command, Slirp will use the IP address of the host from where
+you made the telnet 10.0.2.0 connection. Also, if you use an IP
+address on your PC other than 10.0.2.15, you should include it as an
+argument whenever Slirp expects it, for example with the redir
+command:
+.DS
+    redir 5555 your.ip.address:5555
+.DE
+.PP
+A few notes on configuration:
+.RS 2
+.IP * 2
+You should have "ppp" or "-P" before any PPP options (because when
+Slirp parses -P or ppp, it will initialize all related fields, hence
+clearing anything that was parsed before it).
+.IP * 2
+Upon startup, the configuration is done in this order:
+.RS
+.IP 1) 3
+~/.slirprc-N (if using Load-balancing or Link-resumption)
+.IP 2) 3
+~/.slirprc
+.IP 3) 3
+Command-line options
+.RE
+.IP \  2
+This is important because, for example, if you have "initiate-options"
+(a PPP option) in ~/.slirprc-0, and you run slirp with -P,
+"initiate-options" will not be valid, because -P will clear the fact
+that you want options initiated by Slirp (remember, -P should always
+come before any PPP options).
+.RE
+.SH "COMMANDS AND OPTIONS"
+Slirp includes an "online-help" facility. To get a list of commands
+accepted by Slirp give it the command "help". I.e, you can either run
+Slirp from your shell prompt as:
+.DS
+    slirp "help"
+.DE
+or once Slirp is running, telnet to 10.0.2.0 and type:
+.DS
+    help
+.DE
+To get a brief description of each command simply type "help COMMAND".
+E.g.:
+.DS
+    slirp "help baudrate"
+.DE
+from the command line, or
+.DS
+    help baudrate
+.DE
+in telnet to 10.0.2.0.
+.PP
+In the following descriptions, items within square brackets are
+optional. "Usable" refers to where it can be used, ie:
+"command-line/config-file", "telnet", or "anywhere" (which means it
+can appear in either command-line/config-file or be given via telnet).
+"Command-line" gives the command-line equivalent, where applicable.
+.IP "redir X [start N] [ADDR][:DISPLAY[.SCREEN]]"
+.RS 4
+Redirect a port for use with the X Window System.
+.br
+Usable: anywhere
+.br
+Command-line: -X
+.br
+Options:
+.RS 2
+.IP "start N" 4
+Tell slirp to start looking for free ports starting from N. eg: if N =
+2, slirp will try to grab port 6002 then 6003 etc. this is useful for
+sites which sometimes run their own X server and you don't want to nab
+their port 6000, which they would naturally expect.
+.IP ADDR 4
+Our home ip address, or the address where the X server is (if you have
+a LAN at home to connect more than one machine to the net) (default
+10.0.2.15 when in ~/.slirprc, the source IP address when in
+command-line).
+.IP DISPLAY 4
+Which display to redirect to (default :0).
+.IP SCREEN 4
+Which screen to redirect to (default .0).
+.RE
+.PP
+Example: redir X 10.0.2.15:0.0
+.PP
+Note: This will print the command needed to enter into each shell from
+where you launch your X apps.
+.PP
+See also: show X.
+.RE
+.IP "show X"
+.RS 4
+Show the command that needs to be given to your shell for any X port
+that has been redirected (in case you forget).
+.PP    
+Usable: telnet
+.PP
+Example: show X
+.PP
+Note: This is useful if you forget the command to give to your shell
+for X redirection.
+.PP
+See also: redir X, log start.
+.RE
+.IP "redir [once|time] [udp|tcp] PORT [to] [ADDRESS:]LPORT"
+.RS 4
+Redirect host port to local port using a selected protocol.
+.br
+Usable: anywhere
+.br
+Options:
+.RS 2
+.IP once 8
+Only allow one redirection [TCP only]
+.IP time 8
+Allow redirection to time out [UDP only]
+.IP udp 8
+Redirect a UDP port
+.IP tcp 8
+Redirect a TCP port [default]
+.IP PORT 8
+Port to use on host system
+.IP ADDRESS 8
+Address of your home machine [default 10.0.2.15]
+.IP LPORT 8
+Port to redirect host port to on local system
+.RE
+.PP
+Example: redir tcp 5021 to 21
+.br
+Allow users to ftp to your local machine using your host's port 21.
+(ftp your.hosts.name 5021).
+.PP
+Note: if this command is in your .slirprc file and no address is
+specified, it will assume that your local IP address is 10.0.2.15. If
+you enter the command from the slirp control telnet IP it will use the
+IP address you are accessing with.
+.RE
+.IP "baudrate N"
+.RS 4
+Controls the allocation of time to communications across 
+your serial link.  Higher values generally use more of
+the available bandwidth to your modem.  This is _only_
+an internal control value and does _not_ change the physical
+settings for the host port or modem.
+.br
+Usable: anywhere
+.br
+Command-line: -b
+.PP
+Example: baudrate 14400
+.PP
+Note: higher numbers generally allow better transfer rates for ftp
+sessions, but interactive sessions could become less responsive. the
+optimum value is *JUST* when ftp sessions reach maximum throughput,
+but this can be hard to find (especially on compressing modems) so you
+should choose the maximum throughput you would expect from your modem.
+.RE
+.IP "special|control|host addr ADDRESS"
+.RS 4
+Set ip address aliases and others for slirp.
+.br
+Usable: anywhere
+.br
+Options:
+.RS 2
+.IP "special address" 4
+Set the network ip alias for slirp
+.IP "control address" 4
+Only allow access to slirp control address from ADDRESS.
+.IP "host address" 4
+Tell slirp the IP address of the host it's running on. Use this only
+if slirp can't properly find the host's IP address.
+.RE
+.PP
+Example: special address 10.0.3.0
+.PP
+Note: The ADDRESS for special must end in 0 (zero) and other 
+addresses are classed from this.  The default special
+address is 10.0.2.0 giving the following defined IP's:
+.DS
+        10.0.2.0        slirp control telnet IP
+        10.0.2.1        slirp exec IP
+        10.0.2.2        slirp host alias
+        10.0.2.x        add [pty]exec optional address
+.DE
+.RE
+.IP "add [pty]exec PROGRAM:[ADDRESS:]PORT"
+.RS 4
+Set program to execute on host  when local machine attempts
+to connect to ADDRESS at port PORT.
+.br
+Usable: anywhere
+.br
+Options:
+.RS 2
+.IP exec 8
+Establish binary connection to program in the style of inetd.
+.IP ptyexec 8
+Establish telnet connection to program using telnetd helper
+application under a pseudo-terminal.
+.IP PROGRAM 8
+Program to exec
+.IP ADDRESS 8
+Optional address
+.IP PORT 8
+Port
+.RE
+.PP
+Example: add ptyexec csh:55
+.br
+A telnet connection to the slirp exec IP (default 10.0.2.1) will start
+and connect you directly to the csh program on the host. (telnet
+10.0.2.1 55).
+.PP
+Example: add exec nntpd:10.0.2.3:119
+.br
+A program that attempts to open port 119 at address 10.0.2.3 will be
+connected to the nntpd program.
+.PP
+Note: The use of the ptyexec form requires the slirp.telnetd helper
+application be available on your path.  Also note that ADDRESS must be
+of the form SPECIAL_ADDRESS.xx (10.0.2.xx by default).
+.RE
+.IP "[no]compress"
+.RS 4
+Force startup mode for slirp to SLIP or CSLIP.  This 
+overrides the default automatic mode determination.
+.PP
+Example: nocompress
+.br
+Start in SLIP mode.
+.PP
+Example: compress
+.br
+Start in CSLIP mode.
+.PP
+Note: The default method of operation generally performs well. You
+should only have to use this command if you find that your host and
+local system are failing synchronize the connection type.
+.RE
+.IP "mtu N"
+.RS 4
+Controls the size of the IP packets sent across the serial IP link.
+Valid values are <= 1500.
+.PP
+Example: mtu 1500
+Set the mtu to its largest allowable size.
+.PP
+Note: Larger values generally improve the performance of graphics web
+browsers and ftp transfers across the serial link, at the expense of
+interactive performance. The default value of 552 seems to be a
+reasonable compromise for connections at 14400 baud.
+.RE
+.IP "shell PROGRAM"
+.RS 4
+Set program to execute on EXEC IP default telnet port (23).
+.PP
+This is the same as
+.DS
+        add ptyexec PROGRAM:23
+.DE
+Note: By default slirp connects /bin/sh to the exec IP telnet port.
+.RE
+.IP "help [COMMAND]"
+.RS 4
+Show a brief list of available commands, or more information on
+the named command.
+.RE    
+.IP "remove [pty]exec PROGRAM:[ADDRESS/]PORT"
+.RS 4
+Reverse the effect of "add [pty]exec".  see "add [pty]exec" for the
+options etc.
+.PP
+Note: you must enter the options exactly as you entered it in add
+[pty]exec.
+.PP
+**This description is incomplete.**
+.RE
+.IP "echo [on|off]"
+.RS 4
+Turn echo on or off, depending on how your client behaves.  "echo" by
+itself will show whether echo is currently on or off.
+.RE
+.IP "kill N"
+.RS 4
+Kill the session which has a Socket no. of N.  to find the Socket no.
+of a particular session, use the "stats socket" commands.  See "stats"
+below.
+.PP
+Note: It is recommended you use "close N" instead, as this merely
+wipes out the session, whereas "close N" closes it properly, as a good
+little tcpip-emulator should :)
+.PP	
+"kill -1" shouldn't be used, it will kill the first session it finds
+with -1, which usually is the command-line connection.
+.RE
+.IP "close N"
+.RS 4
+Close the session which has a Socket no. of N. same as "kill N", but
+closes it session gracefully. See "kill N".
+.RE
+.IP "stats [ip|socket|tcp|vj|udp|mbuf|tty|alltty|others?]"
+.RS 4
+Show statistics on the given argument.
+.br
+Options:
+.RS 2
+.IP ip 7
+Show ip statistics.
+.IP socket 7
+Show statistics on the currently active sockets. Use this to find out
+which sessions to close/kill as it will also show the FD of the
+session.
+.IP tcp 7
+Show tcp statistics (packets sent, received, etc).
+.IP udp 7
+Same as tcp but for udp.
+.IP mbuf 7
+Show how many mbufs were allocated, are in use, etc. If the modem is
+idle, and there are more than 1 mbufs on the used list, it suggests an
+mbuf leak.
+.RE
+.RE
+.IP "[pty]exec PROGRAM"
+.RS 4
+This will execute PROGRAM, and the current command-line session will
+cease to exist, taken over by the PROGRAM. ie: when the program exits,
+you will not get the command-line back, the session will (should) close.
+.RE
+.IP "socket [PORT,PASSWORD]"
+.RS 4
+Create a Unix-domain socket and listen() for more interfaces to connect.
+This is also needed for restarting.  Give the arguments PORT,PASSWORD if
+you wish to use Internet-domain sockets instead of UNIX-domain sockets.
+.RE
+.IP "log start"
+.RS 4
+Log all the startup output to the file .slirp_start.
+.RE
+.IP "add emu SERVICE[:TYPE_OF_SERVICE] [lport:]fport"
+.RS 4
+Tell slirp to emulate SERVICE when on port lport/fport.
+.br
+Options:
+.RS 2
+.IP SERVICE
+Can be: ftp, ksh, irc, none.
+.IP TYPE_OF_SERVICE
+Can be: throughput, lowdelay.
+.IP LPORT
+Can be given if that service needs emulation for, say, servers.
+.RE    
+.PP
+Example: add emu ftp 8021
+.br
+If you wish to ftp to somewhere on port 8021.
+.PP
+Example: add emu ftp 8021:0
+.br
+If your home ftp server is on port 8021. NOTE: this does NOT mean if
+you redirect port 8021 for your ftp daemon, it refers the the port AT
+HOME at which ftpd is listening to.
+.PP
+Example: add emu none:lowdelay 8000
+.br
+If you telnet somewhere on port 8000, and you wish those packets to go
+on the fastq (ie: so they have a higher priority than, say, ftp
+packets). This tells slirp that any packets destined for port 8000
+will not have any emulation, but it will be set IPTOS_LOWDELAY.
+.RE
+.IP "dns DNS_IP"
+.RS 4
+Give this to slirp if you want to use 10.0.2.3 as an alias for DNS,
+AND slirp guesses wrong for the DNS on startup.
+.RE
+.SH "TECHNICAL TOPICS"
+.SH " Special Addresses"
+All addresses of the form 10.0.2.xxx are special to Slirp (this can be
+changed with the "special addr" command).  The following is a description of
+what each of the addresses mean:
+.IP "10.0.2.0"
+This is the Slirp "on-line" configuration address.  When you telnet to
+10.0.2.0 you can close connections, configure Slirp, redirect ports, etc.
+all while Slirp is running.  Please read the section "CONFIGURING SLIRP" for
+details on how to use this.
+.IP "10.0.2.1"
+This is the address used by Slirp to execute programs.  For example, if you
+give Slirp the command "add exec /bin/ls:23", when a connection is made to
+10.0.2.1 on port 23, Slirp will execute /bin/ls and redirect the output to
+that connection.  E.g., with "add exec /bin/ls:23", if you telnet to
+10.0.2.1 (telnet uses port 23) you will get a list of files in the directory
+Slirp was started.  Another example could be "add exec /path/to/nntpd:119".
+Now you can tell your News reader to use 10.0.2.1 as the News host and it
+will actually connect to the running program "nntpd".
+.IP "10.0.2.2"
+This is an alias for the remote host.  When you connect to 10.0.2.2 you will
+actually connect to the host Slirp is running on.  This is useful if your
+shell account can be on different hosts, 10.0.2.2 will always mean the host
+Slirp is running on.
+.IP "10.0.2.3"
+This is an alias for your DNS.  Slirp will try to figure out your DNS
+address and all data sent to 10.0.2.3 will be redirected to your DNS
+address, so you can tell your TCP/IP software to use 10.0.2.3 as your DNS.
+This can also be useful if your run Slirp from multiple hosts; you don't
+need to change your DNS for each host.
+.IP "10.0.2.15"
+This is the address recommended by Slirp to be used on your PC.  However
+this is merely a suggestion, Slirp does not care what address you use.
+.SH " Port Redirection"
+Port redirection is an important concept in TCP/IP emulators because
+it allows other people to connect to your PC, as well as allowing some
+programs to work which normally would not work.
+.SH "  How do I Redirect a Port?"
+First you need to realize that under Slirp, nobody on the Internet can
+address your PC directly, since you do NOT have an IP address that
+anybody else can see. The ONLY way they can contact you is through the
+remote host (where Slirp is running).
+.PP
+What has this got to do with Port redirection?  Lots.  For other people on
+the Internet to be able to connect to your PC, Slirp needs to listen for
+connections on a specific port on the remote host, then "redirect" this
+connection and have it connect back to your PC.
+.PP
+For example, say you are running an FTP server on your PC and you want
+others to be able to connect to it, get files, upload files, etc.  What you
+need to do is pick a port number, any port number above 1024 (for security
+reasons), and tell Slirp that any connections on that port are really
+connections to your FTP server.  You do this with the "redir" command.
+.PP
+For this example, say you choose 5555 as the port to redirect (this can be
+ANY number, provided nobody else is using it).  You simply give Slirp the
+command:
+.DS
+    redir 5555 21
+.DE
+The second argument, 21, is the port that is used by FTP.  You could have
+also used the command:
+.DS
+    redir 5555 ftp
+.DE
+and Slirp will figure out that "ftp" means 21.  This command is basically
+telling Slirp "any connections to this host (where Slirp is running) on port
+5555 are really connections to the home PC on port 21 (the port used by the
+FTP server)".
+.PP
+Now you simply tell others to connect to the Remote Host (where Slirp is
+running), which IS visible on the Internet, on port 5555 and they will be
+connected to your FTP server.
+.PP
+This same technique is used when a program uses a specific port for
+communication, for example Kali, an IPX emulator over TCP/IP allowing users
+to run IPX games over the Internet.  Kali uses UDP port 2213 for
+communication so for others to be able to send a packet to your PC on UDP
+port 2213 you need to do the following:
+.DS
+    redir udp 2213 2213
+.DE
+All packets now destined for the Remote Host on UDP port 2213 will be sent
+to your PC on port 2213.
+.SH "  Common Port Redirections"
+Here is a list of programs which need a port redirection to work.
+YOUR_PC_ADDRESS refers to the IP address you assigned to your PC. If
+it is not supplied, 10.0.2.15 is assumed.
+.IP Kali 3
+redir udp 2213 YOUR_PC_ADDRESS:2213
+.br
+(Note: you MUST also set your PC's IP address to the same IP address
+as the Remote Host (where Slirp is running))
+.IP IPhone
+redir udp 22555 YOUR_PC_ADDRESS:22555
+.IP StreamWorks
+redir udp 8000 YOUR_PC_ADDRESS:8000
+.br
+(the 8000 is configurable)
+.IP PowWow 
+redir tcp 13223 YOUR_PC_ADDRESS:13223
+.IP WebPhone
+redir tcp 21845 YOUR_PC_ADDRESS:21845
+.br
+redir udp 21845 YOUR_PC_ADDRESS:21845
+.br
+(Note: WebPhone uses BOTH tcp and udp port 21845. In addition,
+you probably need to set your PC's address to the same IP address
+as the RemoteHost in order to get full functionality)
+.PP
+Please let me know of other programs which require redirection like the
+above.  See "GETTING HELP" for details on how to contact me.
+.SH " Setting The baudrate Option"
+Slirp's "baudrate" option has caused some confusion.  This section will
+explain exactly what it's for and how to use it.
+.PP
+When sending data over the modem to your PC, Slirp needs to know how much
+data it can send over without "saturating" the link.  If Slirp was to send
+as much data as it could, the Operating System would buffer a LOT of it -
+20k is not uncommon.  This could severely "lag" any telnet connections if
+you happen to be FTP-ing a file at the same time.  This is because when you
+type a character, you will not see that character on the screen until the
+the other end sends you the "echo", so if there is 20k worth of data
+buffered you will need to wait until 20k of data is received before you
+see that character on your screen.
+.PP
+To counter this, Slirp uses the "baudrate" option to limit the amount of
+data it sends over the link to prevent the Operating System from buffering
+too much of it.  So if you give Slirp a "baudrate" of 14400, Slirp will send
+data at a rate of 14400 Baud modem (with no compression).
+.PP
+In general, the baud rate at which the connection was made should be the
+"baudrate" you give to Slirp.  So, for example, if you connected at 14400
+Baud, you should give Slirp the option "baudrate 14400".  However, since
+most modems today do compression (v.42bis), it is very difficult for Slirp
+know how much data to send to keep the link "full", yet prevent too much
+buffering by the Operating system.
+.PP
+Therefore you should choose a "baudrate" appropriate to your needs: if you
+use telnet a lot while downloading compressed files, you should set your
+"baudrate" to the same as the CONNECT speed of your modem.  Downloading
+compressed files should not suffer, and telnet sessions will be far more
+responsive.  However, sending text over the modem will not be as fast,
+because your modem will compress the data and send it faster than Slirp
+expects.  Giving a "baudrate" the same as the CONNECT speed will effectively
+turn off modem compression.
+.PP
+If you do not use telnet very much, you should set your "baudrate" to the
+maximum theoretical speed your modem can do.  For example, if you connect at
+14400 and use v.42bis compression, which can compress up to 4x, you should
+set your "baudrate" to 14400*4 = 57600.  This will ensure any compressible
+data will get compressed, and a maximum throughput will be attained, at the
+expense of telnet sessions which will be almost unusable if you happen to be
+downloading files at the same time.
+.PP
+Note however that you can change the "baudrate" setting at any time.  Simply
+telnet to 10.0.2.0 and enter "baudrate XXX" and Slirp will change the rate
+at which data is sent.  This can be useful for example if you're
+downloading a lot of compressed files, but in the middle of the download you
+want to read mail.  Simply change the "baudrate" to the CONNECT speed, and
+when you're finished, change it back to the maximum theoretical speed.
+.PP
+Also, keep in mind that the "baudrate" is also used for other calculations.
+For example, if there are many connections, Slirp will try to be fair and
+send one packet per connection in a round-robin fashion.  This makes all
+connections "smooth" instead of sending a bunch of packets for one
+connection, then a bunch of packets for another connection, etc.  But if the
+"baudrate" is too high, the is exactly what will happen.  Packet
+priority selection also uses the "baudrate"; I.e., if there are packets
+queued ready for sending from both an FTP connection and a telnet
+connection, the telnet packets will be sent first.  But again, this will
+only work if the "baudrate" reflects the amount of data Slirp can send, and
+generally won't work if you set it to the maximum theoretical connection
+speed.
+.PP
+So here are my tips:
+.RS 2
+.IP * 2
+If you download a lot of compressed files and occasionally use telnet, or
+other "interactive" programs, set your "baudrate" to your CONNECT speed
+(because already compressed files won't compress any more with the modem
+compression, so you're unlikely to get faster download's as a result of
+modem compression);
+.IP * 2
+If you mainly use telnet, or other "interactive" programs, and you
+occasionally download some compressed files, set your "baudrate" to the
+maximum theoretical speed (because telnet sessions are usually text, which
+compresses very well, hence screen updates will be faster.  Only when
+downloading compressed files will you experience severe lag);
+.IP * 2
+If you mainly browse the Web (E.g., using Netscape, etc.), then you should
+set your "baudrate" to the theoretical maximum speed (because there's lots of
+text in Web documents which is very compressible, and there's no telnet
+sessions so lag will not be a problem);
+.RE
+.PP
+I personally have by baudrate set at 14400, the speed at which my modem
+connects, even though the modems do v.42bis compression.  Compressed file
+downloads are just as fast, and telnet sessions during FTP downloads are
+surprisingly responsive.  Try it yourself, there's a world of difference.
+.SH "PROBLEMS, QUESTIONS, AND ANSWERS"
+.SH " Which programs do not work over Slirp?"
+Any programs that bind()'s a port, then tell the other end of the connection
+where they should connect() to this bound port.
+.PP
+For example, when you "get" a file during an FTP session, the FTP client
+bind()'s a socket, has a look at which port the socket is bound to, then
+tells the FTP server the address and port of this socket (with the PORT
+command). The FTP server then connect()'s to this address/socket pair.
+.PP
+Now, since your machine isn't really on the Internet, this connect() request
+will not arrive to your host, so it will not work.
+.PP
+Slirp emulates this by bind()ing it's own port on the server that *is* on
+the Internet, and tells the FTP server about *that* address/socket pair.
+When the server connect()'s to it, Slirp will then connect back to your
+machine.
+.PP
+At present, the following programs are emulated:
+.DS
+	rlogin
+	ftp
+	ksh
+	irc (for /dcc)
+	RealAudio
+	talk/ytalk/ntalk
+	CUSeeMe
+.DE
+.SH " Troubleshooting"
+.IP Symptom:
+The connection will "freeze".  E.g., while downloading a picture on WWW it
+will stop halfway and no connections will continue.
+.IP Diagnosis:
+ You probably don't have an 8bit clean link.
+.IP Cure:
+You should try and find out from your sysadmin which characters need to be
+"escaped", then tell Slirp about them using the "asyncmap" and "escape"
+commands.  Note that you need to use PPP for this to work.  (One way to
+test for 8bit cleanliness is to download a BINARY file with Z-Modem.  If the
+file doesn't make it, you have a "dirty" link).
+.IP
+One thing you might try is run Slirp as:
+.DS 
+    slirp "asyncmap ffffffff" "escape ff"
+.DE
+(quotes included!) This will tell Slirp to escape the most common
+"nasty characters.
+.IP Symptom:
+You can connect to hosts using numerical addresses (of the form
+aa.bb.cc.dd) but you cannot connect to hosts when you use their hostname
+(E.g.: ftp.cdrom.com).  It usually times out with a DNS error.
+.IP Diagnosis:
+You probably did not set your DNS address properly.
+.IP Cure:
+Try setting your DNS address to 10.0.2.3.  This should work for most
+situations.  If that fails, go to your shell prompt and type "nslookup".
+This should print the address and hostname of your DNS server.  Use the
+numerical IP address as your DNS.  Do NOT use the hostname.
+.IP 
+If you still can't find your DNS address, ask your sysadmin for it.
+.SH " Answers to Frequently Asked Questions (FAQs)"
+.IP Q1.
+Can I use Slirp through Telnet or Rlogin?
+.IP A1.
+Yes, usually.  But this is highly dependent on your situation.
+.IP
+The reason Slirp usually doesn't work through telnet is because of the
+^] character is interpreted by the telnet client, and 0xff interpreted
+by the server.  While you can tell Slirp to escape these characters
+while using PPP, it may not be possible to get your local PPP software
+to escape characters greater than ASCII 31.  Rlogin also interprets the
+~ character, which may interfere with PPP (especially considering ~ is
+ASCII 0x7e which is used by PPP as the "end of packet" character").
+.IP     
+If your PPP software is unable to escape these characters, or you're
+using (C)SLIP (which must have an 8bit clean link), your best bet is to
+try and make the link 8bit clean.  For example, on some systems you can
+give telnet the -8 flag to make the link 8bit, and -E to stop it from
+interpreting the ^] character.  Similarly for rlogin; -8 to make the
+link 8bit, -E to stop rlogin from interpreting the ~ character.  You
+should look at the telnet and rlogin manual pages ("man telnet" and
+"man rlogin" respectively) to see if your telnet/rlogin has similar
+options. 
+.IP     
+Another possible solution is to use Slirp's ability to work over
+multiple hosts.  See the slirp.doc documentation for more details.
+.IP Q2.
+How do I run an X program on another host and have it display on my PC?
+.IP A2.
+Use the "redir X" command in ~/.slirprc.  This will redirect a port for
+use with X programs.
+.IP     
+On startup, Slirp should print something like:
+.DS     
+    X Redir: In sh/bash/zsh/etc. type: DISPLAY=IP.ADDRESS:X.Y; export DISPLAY
+    X Redir: In csh/tcsh/etc. type:    setenv DISPLAY IP.ADDRESS:X.Y
+.DE
+Now, when you telnet to the host you wish to run the X programs from,
+you should do as Slirp suggest above; type either of the two commands,
+depending on which shell you are using.  You could also run the X
+program as "xprog -display IP.ADDRESS:X.Y" as printed above.
+.IP     
+If you missed what Slirp displayed on startup, you can telnet to
+10.0.2.0 and give Slirp the command "show X", and the above will be
+printed.
+.IP     
+Note that you also have to make sure your X server will accept the
+connection.  See the man page for xhost and Xsecurity.  Be careful with
+issuing commands like "xhost +", this will allow anyone to connect to
+your X server and do basically anything they want.
+.IP Q3.
+When I run "talk" or "wintalk", etc. I am able to send requests to
+other people but they cannot send requests to me.  Why?
+.IP A3.
+You won't be able to receive talk requests, period.  This is because
+Slirp never see's the incoming talk request; it is sent directly over
+the modem, most likely corrupting any incoming packet with it (which
+will have to be retransmitted).  Slirp turns off your messages so the
+person who tries to talk to you should receive a "User is refusing
+messages" error.
+.IP Q4.
+I can't telnet to 10.0.2.0, the Slirp control address.  What's wrong?
+.IP A4.
+See the answer to this question in slirp.doc and recompile slirp.
+.IP Q5.
+I'm having a few problems with Slirp and want to try and find the
+problem myself.  Does Slirp have any debugging facilities?
+.IP A5.
+Yes. See slirp.doc for compile-time debug options.
+.IP Q6.
+My ISP logs me out if I idle too long.  How can I get Slirp to prevent
+this?
+.IP A6.
+First of all, the idle-logout mechanism is used for a reason: to
+prevent people from hogging a modem which is not in use.  So if you're
+idle, logout and give others chance to logon.
+.IP     
+Having said that, you can make Slirp use TCP keep-alive timers to
+regularly probe each TCP connection.  To activate this, add:
+.DS     
+    keepalive
+.DE
+to your ~/.slirprc file.  This will make Slirp probe each TCP
+connection every minute or so.  You can change this interval by giving
+keepalive the number of seconds:
+.DS     
+    keepalive SECONDS
+.DE
+Note that no probes will be sent if there are no TCP connections.  So
+you need at least one active TCP connection for this to work.
+.SH "GETTING HELP"
+There are several sources of help.  First, read the previous sections
+"Troubleshooting" and "Answers to Frequently Asked Questions (FAQs)".
+.PP
+If that fails, try the Slirp Home Page at:
+.DS
+    http://blitzen.canberra.edu.au/slirp
+.DE
+There are lots of neat links there to other pages which have specific
+configuration information.
+.PP
+There is also a Newsgroup dedicated to SLIP-emulators called
+alt.dcom.slip-emulators. You will find lots of discussion about Slirp
+and other "SLIP-emulators". The FAQ (Frequently Asked Questions) for
+alt.dcom.slip-emulators is included in the "docs" directory, I would
+suggest reading this as well.
+.PP
+If all else fails, send me e-mail to danjo@blitzen.canberra.edu.au
+with the following information:
+.RS 2
+.IP * 2
+Output of the command "uname -a" on the remote system;
+.IP * 2
+Operating System name and version you run on your PC;
+.IP * 2
+Version of Slirp you are using (IMPORTANT!!!);
+.IP * 2
+If you managed to get Slirp running, run Slirp as "slirp -S" then try
+whatever failed.  When you exit Slirp, you should have a file called
+"slirp_stats".  Send me this file; and
+.IP * 2
+Anything else you consider relevant.
+.RE
+.PP
+*PLEASE* include all the above information. If you do not, I may
+simply press "d". I can't guarantee a response, but I will try my
+best.
+.SH THANKS
+A big "THANK YOU!" goes to the following people for their help in creating
+Slirp.
+.PP
+Juha Pirkola, Gregory M. Christy, The Regents of the University of
+California, Carnegie Mellon University, The Australian National University,
+and RSA Data Security, Inc. whose source code is used throughout Slirp.  Slirp
+would not be without them.
+.PP
+Thanks to all the contributors who helped with bugs, suggestions, code, etc.
+Read the file ChangeLog to see exactly who helped with what.
+.PP
+A special thanks goes to Chris Metcalf and Juha Pirkola for their
+contributions (see ChangeLog).  They put in extra effort and Slirp wouldn't
+be the same without their help.  Thanks guys!
+.PP
+Thanks to all the people who sent very kind and encouraging e-mail, it's
+sincerely appreciated.
+.PP
+Thanks to all the admins and Head Honcho's at UCNet, the University of
+Canberra Computer Club ("blitzen") who gave me some real-estate on their
+machine (blitzen.canberra.edu.au) to work with (thanks to Tony Delroy for
+giving me the account originally).  Hey! Why don't you check out their home
+page at http://blitzen.canberra.edu.au/?
+.PP
+Thanks to Brazil for coffee (and Sepultura! :)
+.PP
+Thanks to the laws of physics, the building blocks of the universe.
+.SH COPYRIGHT
+Slirp was written by Danny Gasparovski.
+.PP
+Copyright (c) 1995 Danny Gasparovski.  All Rights Reserved.
+.PP
+Slirp is free software; "free" as in you don't have to pay for it, and
+you are free to do whatever you want with it. I do not accept any
+donations, monetary or otherwise, for Slirp. Instead, I would ask you
+to pass this potential donation to your favorite charity. In fact, I
+encourage *everyone* who finds Slirp useful to make a small donation
+to their favorite charity (for example, GreenPeace). This is not a
+requirement, but a suggestion from someone who highly values the
+service they provide.
+.PP
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+.IP 1. 3
+Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+.IP 2. 3
+Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+.IP 3. 3
+All advertising materials mentioning features or use of this software
+must display the following acknowledgment: This product includes
+software developed by Danny Gasparovski.
+.PP
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+DANNY GASPAROVSKI OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.PP
+This basically means you can do anything you want with the software, except
+1) call it your own, and 2) claim warranty on it.  There is no warranty for
+this software.  None.  Nada.  If you lose a million dollars while using
+Slirp, that's your loss not mine.  So, ***USE AT YOUR OWN RISK!***.
+.PP
+If these conditions cannot be met due to legal restrictions (E.g. where it
+is against the law to give out Software without warranty), you must cease
+using the software and delete all copies you have.
+.PP
+Slirp uses code that is copyrighted by the following people/organizations:
+.PP
+.DS
+    Juha Pirkola.
+    Gregory M. Christy.
+    The Regents of the University of California.
+    Carnegie Mellon University.
+    The Australian National University.
+    RSA Data Security, Inc.
+.DE
+Please read the top of each source file for the details on the various
+copyrights.
+.SH AUTHOR
+Slirp was written by Danny Gasparovski.
+.PP
+Manpage by George Ferguson, ferguson@cs.rochester.edu, based on Slirp
+1.0b documentation.

@@ -96,7 +96,8 @@ release: all
 #
 
 .c.p:
-	$(MAKEPRO)
+#	$(MAKEPRO)
+	touch $@
 
 
 auth.o: $(COMMON_H) ${srcdir}/ppp/auth.c
